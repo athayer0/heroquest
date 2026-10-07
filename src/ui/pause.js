@@ -5,7 +5,7 @@ import { px } from '../gfx/sprites.js';
 import { formatTime } from '../util.js';
 import { drawPanel, dimScreen, PANEL } from './panel.js';
 
-const W = 196;
+const W = 216;
 const H = 168;
 const OPTIONS = ['RESUME', 'CONTROLS', 'QUIT TO TITLE'];
 const CONTROLS = [
@@ -104,8 +104,8 @@ export class PauseScene {
   drawControls(ctx, x, y) {
     CONTROLS.forEach(([key, action], i) => {
       const oy = y + 40 + i * 16;
-      drawText(ctx, key, x + 14, oy, '#ffe040');
-      drawText(ctx, action, x + 96, oy, '#f4f4f0');
+      drawText(ctx, key, x + 12, oy, '#ffe040');
+      drawText(ctx, action, x + 98, oy, '#f4f4f0');
     });
     drawTextCentered(ctx, 'SPACE: BACK', SCREEN_W / 2, y + H - 16, '#7a7a90');
   }

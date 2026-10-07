@@ -88,24 +88,24 @@ export class TitleScene {
   }
 
   draw(ctx) {
-    // Backdrop: a meadow screen, dimmed, with a slow vertical drift.
+    // Backdrop: a meadow screen from the top edge, dimmed; the strip below it stays black for the controls.
     px(ctx, '#0e0e14', 0, 0, SCREEN_W, SCREEN_H);
-    this.backdrop.draw(ctx, 0, HUD_H / 2, this.t);
+    this.backdrop.draw(ctx, 0, 0, this.t);
     dimScreen(ctx, SCREEN_W, SCREEN_H, 0.5);
 
     // Title
     const bob = Math.round(Math.sin(this.t * 2) * 2);
     drawTextCentered(ctx, 'HEROQUEST', SCREEN_W / 2 + 2, 30 + bob + 2, '#1b1b23', 3);
     drawTextCentered(ctx, 'HEROQUEST', SCREEN_W / 2, 30 + bob, '#ffe040', 3);
-    drawTextCentered(ctx, 'RESCUE THE PRINCESS', SCREEN_W / 2, 60, '#f4f4f0');
+    drawTextCentered(ctx, 'RESCUE THE PRINCESS', SCREEN_W / 2, 58, '#f4f4f0');
 
     // Hero holding up their sword
     const heroX = SCREEN_W / 2 - 16;
-    const heroY = 76;
+    const heroY = 86;
     ctx.save();
     ctx.translate(heroX, heroY);
     ctx.scale(2, 2);
-    ctx.drawImage(getSwordSprite('wooden'), 9, -10);
+    ctx.drawImage(getSwordSprite('wooden'), 9, -8);
     ctx.drawImage(getPlayerSprites(heroColors('cloth')).down[0], 0, 0);
     ctx.restore();
 
