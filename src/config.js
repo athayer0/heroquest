@@ -136,7 +136,7 @@ export const ENEMIES = {
   // Desert (Lv 6)
   mummy: {
     hp: 30, attack: 8, xp: 15, gold: [10, 16],
-    speed: 26, // always walks straight at you; never stops to wander
+    speed: 52, // always walks straight at you; never stops to wander
   },
   vulture: {
     hp: 22, attack: 7, xp: 12, gold: [9, 13],
@@ -221,7 +221,7 @@ export const CASTLE_GATE = {
 // then throws a fan of cursed bandages. Phase 2 raises mummies and resurfaces faster.
 export const PHARAOH = {
   name: 'THE SAND PHARAOH',
-  hp: 200,
+  hp: 400,
   attack: 12, // bandages and bursting out of the sand
   contactAttack: 9,
   xp: 150, // hero XP, the first time only
@@ -237,33 +237,33 @@ export const PHARAOH = {
   drop: { spell: 'ward', seal: true },
   phase1: {
     walkSpeed: 18,
-    walkTime: [1.2, 1.8], // seconds above ground before sinking
-    sinkTime: 0.5,
-    trackTime: 1.4, // the shadow follows you...
+    walkTime: [0.85, 1.25], // seconds above ground before sinking
+    sinkTime: 0.35,
+    trackTime: 1.0, // the shadow follows you...
     trackSpeed: 70,
-    lockTime: 0.6, // ...then stops and flashes before he bursts up
-    riseTime: 0.35,
-    riseRecover: 0.9, // stands still after surfacing (a good moment to hit him)
-    throwWindup: 0.6,
+    lockTime: 0.45, // ...then stops and flashes before he bursts up
+    riseTime: 0.25,
+    riseRecover: 0.65, // stands still after surfacing (a good moment to hit him)
+    throwWindup: 0.45,
     bandages: 5,
     spreadDegrees: 18, // between neighboring bandages
     bandageSpeed: 70,
-    throwRecover: 0.7,
+    throwRecover: 0.5,
   },
   phase2: {
     walkSpeed: 24,
-    walkTime: [0.8, 1.2],
-    sinkTime: 0.4,
-    trackTime: 0.9,
+    walkTime: [0.55, 0.85],
+    sinkTime: 0.28,
+    trackTime: 0.65,
     trackSpeed: 90,
-    lockTime: 0.45,
-    riseTime: 0.3,
-    riseRecover: 0.75,
-    throwWindup: 0.5,
+    lockTime: 0.35,
+    riseTime: 0.2,
+    riseRecover: 0.55,
+    throwWindup: 0.35,
     bandages: 7,
     spreadDegrees: 16,
     bandageSpeed: 78,
-    throwRecover: 0.6,
+    throwRecover: 0.45,
     mummies: 2, // raised at the phase change, and again on surfacing once they're all gone
   },
 };
@@ -273,7 +273,7 @@ export const PHARAOH = {
 // for a moment after each breath. Phase 2 adds falling icicles. It ignores ice entirely.
 export const FROST_WYRM = {
   name: 'THE FROST WYRM',
-  hp: 300,
+  hp: 600,
   attack: 14, // breath, tail and icicles
   contactAttack: 10,
   xp: 200, // hero XP, the first time only
@@ -290,24 +290,24 @@ export const FROST_WYRM = {
   armorMult: 0.5, // sword damage while not stunned
   speed: 22,
   turnSpeed: 2.2, // radians per second: slow enough to get behind it
-  breathEvery: [2.2, 3.2], // seconds of walking between breaths
-  breathWindup: 0.9, // the cold mist shows the cone
+  breathEvery: [1.55, 2.25], // seconds of walking between breaths
+  breathWindup: 0.65, // the cold mist shows the cone
   breathTime: 0.8,
   breathRange: 76, // px from its mouth
   breathHalfAngle: 30, // degrees each side of where it faces
-  stunTime: 2.0, // after each breath: no contact damage, full sword damage
+  stunTime: 1.4, // after each breath: no contact damage, full sword damage
   tailRange: 44, // px: you're "behind" it within this range...
-  tailDelay: 0.35, // ...for this long, and it starts a tail sweep
-  tailWindup: 0.45,
+  tailDelay: 0.25, // ...for this long, and it starts a tail sweep
+  tailWindup: 0.35,
   tailRadius: 26,
-  tailRecover: 0.5,
+  tailRecover: 0.35,
   phase2: {
     speed: 28,
-    breathEvery: [1.8, 2.6],
-    icicleEvery: [2.6, 3.4], // a volley of icicles; shadows mark where they'll land
+    breathEvery: [1.25, 1.8],
+    icicleEvery: [1.8, 2.4], // a volley of icicles; shadows mark where they'll land
     icicles: 3, // one where you stand, the rest nearby
     icicleSpread: 40,
-    icicleFallTime: 1.1,
+    icicleFallTime: 0.8,
     icicleRadius: 12,
   },
 };
@@ -340,16 +340,16 @@ export const BOSS = {
   },
   phase2: {
     speed: 34,
-    volleyInterval: [2.6, 3.4],
-    windup: 0.5,
-    recover: 0.55,
+    volleyInterval: [1.8, 2.4],
+    windup: 0.35,
+    recover: 0.4,
     projectileSpeed: 62,
     shots: 5,
     spreadDegrees: 18,
-    slamInterval: [3.2, 4.2],
-    slamWarning: 0.9, // warning circle on the ground before impact
+    slamInterval: [2.25, 2.95],
+    slamWarning: 0.65, // warning circle on the ground before impact
     slamRadius: 34,
-    slamRecover: 1.0,
+    slamRecover: 0.7,
   },
   phase3: {
     teleportTime: 0.8, // fades out while smoke gathers where he'll appear
@@ -399,11 +399,6 @@ export const SKILLS = {
     xpPerDamage: 0.5, // taking a hit: this × damage taken
     levelsPerDefense: 10, // +1 defense every this many levels
   },
-  evasion: {
-    name: 'Evasion',
-    xpPerDamage: 0.75, // a roll dodging a hit that would have landed: this × its damage
-    rollCooldownPctPerLevel: 1, // shorter roll cooldown
-  },
   destruction: {
     name: 'Destruction',
     xpPerDamage: 0.35, // an offensive spell damaging an enemy: this × the damage
@@ -417,54 +412,43 @@ export const SKILLS = {
   },
 };
 
-// Perks: one perk point per hero level. Each perk needs a minimum level in its skill; perks
-// within a skill don't depend on each other. `effects` are summed across owned perks (see
+// Perks: one perk point per hero level. Each perk needs a minimum level in its skill (the four
+// tiers unlock at skill level 5, 10, 15 and 20); perks within a skill don't depend on each other. `effects` are summed across owned perks (see
 // perkValue in systems/skills.js); the other numbers tune perks with special behavior.
 export const PERKS = {
   blade: {
-    sharpened: { name: 'Sharpened', skillLevel: 1, desc: '+15% SWORD DAMAGE', effects: { swordDamagePct: 15 } },
+    sharpened: { name: 'Sharpened', skillLevel: 5, desc: '+15% SWORD DAMAGE', effects: { swordDamagePct: 15 } },
     wideArc: { name: 'Wide Arc', skillLevel: 10, desc: 'SWORD ARC 140 TO 180 DEGREES', effects: { swordArcDegrees: 40 } },
     criticalEdge: {
-      name: 'Critical Edge', skillLevel: 20, desc: '15% CHANCE OF DOUBLE DAMAGE', effects: { critChancePct: 15 },
+      name: 'Critical Edge', skillLevel: 15, desc: '15% CHANCE OF DOUBLE DAMAGE', effects: { critChancePct: 15 },
       damageMult: 2,
     },
-    whirlwind: {
-      name: 'Whirlwind', skillLevel: 30, desc: 'HOLD CLICK, RELEASE TO SPIN',
-      chargeTime: 0.6, // seconds the mouse button must be held
-      spinTime: 0.4, // seconds the 360-degree spin lasts
-      damageMult: 1.5,
-    },
-  },
-  armor: {
-    toughened: { name: 'Toughened', skillLevel: 1, desc: '+2 DEFENSE', effects: { defense: 2 } },
-    steady: { name: 'Steady', skillLevel: 10, desc: 'KNOCKBACK HALVED', effects: { knockbackPct: -50 } },
-    thorns: { name: 'Thorns', skillLevel: 20, desc: 'FOES THAT TOUCH YOU TAKE 25%', effects: { thornsPct: 25 } },
-    lastStand: {
-      name: 'Last Stand', skillLevel: 30, desc: '+4 DEFENSE BELOW 25% HP', effects: { lowHpDefense: 4 },
-      below: 0.25, // fraction of max HP
-    },
-  },
-  evasion: {
-    nimble: { name: 'Nimble', skillLevel: 1, desc: 'ROLL COOLDOWN -30%', effects: { rollCooldownPct: -30 } },
-    longRoll: { name: 'Long Roll', skillLevel: 10, desc: '+25% ROLL DISTANCE', effects: { rollDistancePct: 25 } },
     riposte: {
       name: 'Riposte', skillLevel: 20, desc: 'SWING RIGHT AFTER A DODGE: 2X',
       time: 1.0, // seconds after a perfect dodge to start the swing
       damageMult: 2,
     },
-    doubleRoll: { name: 'Double Roll', skillLevel: 30, desc: 'TWO ROLLS BEFORE COOLDOWN', effects: { extraRolls: 1 } },
+  },
+  armor: {
+    toughened: { name: 'Toughened', skillLevel: 5, desc: '+2 DEFENSE', effects: { defense: 2 } },
+    steady: { name: 'Steady', skillLevel: 10, desc: 'KNOCKBACK HALVED', effects: { knockbackPct: -50 } },
+    thorns: { name: 'Thorns', skillLevel: 15, desc: 'FOES THAT TOUCH YOU TAKE 25%', effects: { thornsPct: 25 } },
+    lastStand: {
+      name: 'Last Stand', skillLevel: 20, desc: '+4 DEFENSE BELOW 25% HP', effects: { lowHpDefense: 4 },
+      below: 0.25, // fraction of max HP
+    },
   },
   destruction: {
-    efficient: { name: 'Efficient', skillLevel: 1, desc: 'DESTRUCTION SPELLS COST -20%', effects: { destructionCostPct: -20 } },
+    efficient: { name: 'Efficient', skillLevel: 5, desc: 'DESTRUCTION SPELLS COST -20%', effects: { destructionCostPct: -20 } },
     inferno: { name: 'Inferno', skillLevel: 10, desc: 'BURNS DEAL 2X AND LAST 5S', effects: { burnDamagePct: 100, burnTimeBonus: 2 } },
-    piercing: { name: 'Piercing', skillLevel: 20, desc: 'BOLTS PASS THROUGH 1 ENEMY', effects: { boltPierce: 1 } },
-    shatter: { name: 'Shatter', skillLevel: 30, desc: '+50% DAMAGE TO FROZEN FOES', effects: { frozenDamagePct: 50 } },
+    piercing: { name: 'Piercing', skillLevel: 15, desc: 'BOLTS PASS THROUGH 1 ENEMY', effects: { boltPierce: 1 } },
+    shatter: { name: 'Shatter', skillLevel: 20, desc: '+50% DAMAGE TO FROZEN FOES', effects: { frozenDamagePct: 50 } },
   },
   restoration: {
-    manaFlow: { name: 'Mana Flow', skillLevel: 1, desc: '+50% MANA REGEN', effects: { manaRegenPct: 50 } },
+    manaFlow: { name: 'Mana Flow', skillLevel: 5, desc: '+50% MANA REGEN', effects: { manaRegenPct: 50 } },
     potionLore: { name: 'Potion Lore', skillLevel: 10, desc: 'POTIONS HEAL 50% MORE', effects: { potionHealPct: 50 } },
-    regeneration: { name: 'Regeneration', skillLevel: 20, desc: '+1 HP/S WHILE STANDING STILL', effects: { regenHpPerSec: 1 } },
-    secondWind: { name: 'Second Wind', skillLevel: 30, desc: 'SURVIVE 1 LETHAL HIT PER TRIP' },
+    regeneration: { name: 'Regeneration', skillLevel: 15, desc: '+1 HP/S WHILE STANDING STILL', effects: { regenHpPerSec: 1 } },
+    secondWind: { name: 'Second Wind', skillLevel: 20, desc: 'SURVIVE 1 LETHAL HIT PER TRIP' },
   },
 };
 

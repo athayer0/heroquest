@@ -170,7 +170,7 @@ export class TitleScene {
 
     drawTextCentered(ctx, 'ARROWS: CHOOSE   SPACE/ENTER: OK', SCREEN_W / 2, SCREEN_H - 34, '#7a7a90');
     drawTextCentered(ctx, 'WASD: MOVE  CLICK: SWORD  SPACE: ROLL', SCREEN_W / 2, SCREEN_H - 22, '#5a5a70');
-    drawTextCentered(ctx, 'RIGHT CLICK: SPELL  1-4: SWITCH', SCREEN_W / 2, SCREEN_H - 12, '#5a5a70');
+    drawTextCentered(ctx, 'RIGHT CLICK: SPELL  1-5: SWITCH', SCREEN_W / 2, SCREEN_H - 12, '#5a5a70');
 
     if (this.mode === 'file') this.drawFileMenu(ctx);
     if (this.mode === 'confirm') this.drawConfirm(ctx);

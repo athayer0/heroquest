@@ -108,7 +108,10 @@ export function applySave(player, data) {
   }
   // Saves from before perks existed get a point for every level already gained.
   const perks = Array.isArray(data.perks) ? data.perks : [];
-  player.perks = [...new Set(perks.filter((id) => typeof id === 'string' && Object.hasOwn(PERK_INDEX, id)))];
+  const kept = [...new Set(perks.filter((id) => typeof id === 'string' && Object.hasOwn(PERK_INDEX, id)))];
+  // Perks a later version removed (the whole Evasion tree, Whirlwind) refund their point.
+  const refund = Math.max(0, new Set(perks).size - kept.length);
+  player.perks = kept;
   const ids = (list, valid) => [...new Set((Array.isArray(list) ? list : []).filter((id) => typeof id === 'string' && valid(id)))];
   player.bossesDefeated = ids(data.bossesDefeated, isBossId);
   player.openedChests = ids(data.openedChests, () => true);
@@ -122,6 +125,7 @@ export function applySave(player, data) {
   player.visitedRooms = new Set(Array.isArray(data.visitedRooms) ? ids(data.visitedRooms, () => true) : ['village_square']);
   player.lastVillage = typeof data.lastVillage === 'string' ? data.lastVillage : null;
   player.perkPoints = data.perkPoints === undefined ? player.level - 1 : int(data.perkPoints, 0, LEVELING.maxLevel, 0);
+  player.perkPoints = Math.min(LEVELING.maxLevel, player.perkPoints + refund);
   const s = data.stats ?? {};
   player.stats = {
     playTime: Math.max(0, Number(s.playTime) || 0),

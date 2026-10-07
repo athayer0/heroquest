@@ -82,16 +82,14 @@ export class Player {
 
     this.swordTier = 0; // index into SWORDS
     this.armorTier = 0; // index into ARMOR
-    this.knownSpells = []; // spell ids in the order learned (keys 1-4 select them)
+    this.knownSpells = []; // spell ids in the order learned (keys 1-5 select them)
     this.spellIndex = 0; // which known spell is equipped
 
     this.attackT = 0;
     this.attackCd = 0;
     this.attackAngle = 0; // center of the current swing (radians)
-    this.swingDuration = SWORD.swingTime; // of the current swing (a Whirlwind spin lasts longer)
+    this.swingDuration = SWORD.swingTime; // of the current swing
     this.swingArc = 0; // radians the current swing sweeps through
-    this.spinning = false; // the current swing is a Whirlwind spin
-    this.chargeT = 0; // Whirlwind: how long the mouse button has been held
     this.riposteT = 0; // Riposte: time left to start a swing after a perfect dodge
     this.riposteSwingId = -1; // the swing that gets Riposte's bonus
     this.queuedAim = null; // { x, y, t }: a click buffered during a swing or roll
@@ -99,9 +97,7 @@ export class Player {
     this.rollT = 0;
     this.rollCd = 0;
     this.roll = { x: 0, y: 0 }; // unit direction of the current roll
-    this.dodged = new Set(); // attack sources this roll has already dodged (one Evasion award each)
-    this.rollChain = 0; // Double Roll: rolls made since the last cooldown
-    this.rollChainT = 0; // Double Roll: time left to make the next roll in the chain
+    this.dodged = new Set(); // attack sources this roll has already dodged (one DODGE! each)
     this.regenAcc = 0; // Regeneration: fractional HP waiting to be healed
     this.secondWindUsed = false; // Second Wind: reset each time you return to the Village
     this.secondWindFired = false; // set when Second Wind saves you, for the scene to announce
@@ -239,7 +235,6 @@ export class Player {
     if (this.manaRegenDelay > 0) this.manaRegenDelay -= dt;
     else this.mana = Math.min(this.maxMana, this.mana + MANA.regenPerSec * heroBonus.manaRegenMult(this) * dt);
     this.riposteT = Math.max(0, this.riposteT - dt);
-    if (this.rollChainT > 0 && (this.rollChainT -= dt) <= 0) this.rollChain = 0;
     this.regenerate(dt);
 
     // Clicks are remembered briefly so a click just before a swing or roll ends still counts.
@@ -253,15 +248,11 @@ export class Player {
     // Frozen: can't move, attack, roll or cast until it wears off.
     if (this.frozen) {
       this.attackT = 0;
-      this.spinning = false;
-      this.chargeT = 0;
       this.queuedAim = null;
       this.vel = { x: 0, y: 0 };
       this.moving = false;
       return;
     }
-
-    this.updateWhirlwind(dt, input);
 
     if (this.kb.t > 0) {
       this.kb.t -= dt;
@@ -273,10 +264,7 @@ export class Player {
 
     if (this.attackT > 0) {
       this.attackT -= dt;
-      if (this.attackT <= 0) {
-        this.attackCd = SWORD.cooldown;
-        this.spinning = false;
-      }
+      if (this.attackT <= 0) this.attackCd = SWORD.cooldown;
     }
 
     const mx = (input.isDown('right') ? 1 : 0) - (input.isDown('left') ? 1 : 0);
@@ -285,7 +273,7 @@ export class Player {
     if (this.rollT > 0) {
       this.rollT -= dt;
       if (this.rollT <= 0) this.endRoll();
-      const dist = DODGE.speed * heroBonus.rollSpeedMult(this) * dt;
+      const dist = DODGE.speed * dt;
       this.moveBy(this.roll.x * dist, this.roll.y * dist, room, dist);
       return;
     }
@@ -302,8 +290,7 @@ export class Player {
     }
 
     this.moving = mx !== 0 || my !== 0;
-    if (this.spinning) this.facing = this.facingFromAngle(this.swordAngle(this.swingProgress));
-    else if (this.attacking) this.facing = this.facingFromAngle(this.attackAngle);
+    if (this.attacking) this.facing = this.facingFromAngle(this.attackAngle);
     else if (this.moving) this.updateFacing(mx, my, input.lastDir);
 
     if (this.moving) this.animT += dt;
@@ -347,30 +334,10 @@ export class Player {
     this.beginSwing(SWORD.swingTime, ((SWORD.arcDegrees + heroBonus.swordArcDegrees(this)) * Math.PI) / 180);
   }
 
-  // Whirlwind: hold the mouse button to charge, release once charged to spin. Rolling cancels it.
-  updateWhirlwind(dt, input) {
-    if (!hasPerk(this, 'whirlwind')) return;
-    if (input.mouseHeld && !this.rolling) {
-      this.chargeT += dt;
-      return;
-    }
-    if (!input.mouseHeld && !this.rolling && this.charged) {
-      this.attackAngle = FACING_ANGLE[this.facing];
-      this.beginSwing(PERKS.blade.whirlwind.spinTime, Math.PI * 2);
-      this.spinning = true;
-    }
-    this.chargeT = 0;
-  }
-
-  get charged() {
-    return hasPerk(this, 'whirlwind') && this.chargeT >= PERKS.blade.whirlwind.chargeTime;
-  }
-
   beginSwing(duration, arc) {
     this.swingDuration = duration;
     this.swingArc = arc;
     this.attackT = duration;
-    this.spinning = false;
     this.swingId++;
     // Riposte: the first swing soon after a perfect dodge hits harder.
     if (this.riposteT > 0) {
@@ -385,21 +352,12 @@ export class Player {
 
   // Called when a roll's i-frames absorb a hit.
   onPerfectDodge() {
-    if (hasPerk(this, 'riposte')) this.riposteT = PERKS.evasion.riposte.time;
+    if (hasPerk(this, 'riposte')) this.riposteT = PERKS.blade.riposte.time;
   }
 
-  // The cooldown starts after the last roll in a chain (one roll, or two with Double Roll).
   endRoll() {
     this.vel = { x: this.roll.x * PLAYER.speed, y: this.roll.y * PLAYER.speed }; // keeps sliding on ice
-    this.rollChain++;
-    if (this.rollChain < heroBonus.rollsBeforeCooldown(this)) {
-      this.rollCd = 0;
-      this.rollChainT = DODGE.cooldown; // make the next roll within this time, or the chain resets
-    } else {
-      this.rollCd = DODGE.cooldown * heroBonus.rollCooldownMult(this);
-      this.rollChain = 0;
-      this.rollChainT = 0;
-    }
+    this.rollCd = DODGE.cooldown;
   }
 
   // Regeneration perk: slowly heals while standing still.
@@ -426,9 +384,6 @@ export class Player {
       this.roll = { ...FACING_VEC[this.facing] };
     }
     this.rollT = DODGE.time;
-    this.rollChainT = 0;
-    this.chargeT = 0;
-    this.spinning = false;
     this.dodged.clear();
     this.attackT = 0;
     this.moving = true;
@@ -466,8 +421,6 @@ export class Player {
     const kb = PLAYER.knockbackSpeed * heroBonus.knockbackMult(this);
     this.kb = { x: d.x * kb, y: d.y * kb, t: PLAYER.knockbackTime };
     this.attackT = 0;
-    this.spinning = false;
-    this.chargeT = 0;
     return true;
   }
 
@@ -570,8 +523,6 @@ export class Player {
     this.wardT = 0;
     this.vel = { x: 0, y: 0 };
     this.attackT = 0;
-    this.spinning = false;
-    this.chargeT = 0;
     this.riposteT = 0;
     this.rollT = 0;
     this.queuedAim = null;
@@ -606,7 +557,6 @@ export class Player {
     }
     drawStatusFx(ctx, this, frames[frame], px, py);
     this.drawWard(ctx, ox, oy);
-    this.drawCharge(ctx, ox, oy);
   }
 
   // Ward: a slowly turning ring of light around the hero, blinking as it runs out.
@@ -620,23 +570,6 @@ export class Player {
       const a = turn + (i / 16) * Math.PI * 2;
       ctx.fillStyle = i % 2 ? '#e0f4ff' : '#6ab0f0';
       ctx.fillRect(Math.round(c.x + ox + Math.cos(a) * r) - 1, Math.round(c.y + oy - 3 + Math.sin(a) * r) - 1, 2, 2);
-    }
-  }
-
-  // Whirlwind charge: a ring of dots fills in around the hero, then blinks once charged.
-  drawCharge(ctx, ox, oy) {
-    const SHOW_AFTER = 0.15; // quick clicks don't flash the ring
-    if (this.chargeT < SHOW_AFTER || !hasPerk(this, 'whirlwind')) return;
-    const full = PERKS.blade.whirlwind.chargeTime;
-    const fill = Math.min(1, (this.chargeT - SHOW_AFTER) / (full - SHOW_AFTER));
-    const charged = this.charged;
-    if (charged && Math.floor(this.chargeT * 12) % 2 === 0) return;
-    const c = this.center;
-    const DOTS = 12;
-    ctx.fillStyle = charged ? '#ffe040' : '#f4f4f0';
-    for (let i = 0; i < Math.round(DOTS * fill); i++) {
-      const a = -Math.PI / 2 + (i / DOTS) * Math.PI * 2;
-      ctx.fillRect(Math.round(c.x + ox + Math.cos(a) * 13) - 1, Math.round(c.y + oy - 3 + Math.sin(a) * 13) - 1, 2, 2);
     }
   }
 

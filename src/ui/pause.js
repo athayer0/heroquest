@@ -17,7 +17,7 @@ const CONTROLS = [
   ['ARROWS / WASD', 'MOVE'],
   ['CLICK', 'SWING SWORD'],
   ['RIGHT CLICK', 'CAST SPELL'],
-  ['1-4 / WHEEL', 'SWITCH SPELL'],
+  ['1-5 / WHEEL', 'SWITCH SPELL'],
   ['SPACE', 'DODGE ROLL'],
   ['E', 'TALK / READ / SHOP'],
   ['Q', 'HEALTH POTION'],

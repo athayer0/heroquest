@@ -2,6 +2,7 @@
 // interactions and flip-screen transitions.
 import { TILE, ROOM_W, ROOM_H, HUD_H, EDGE_VEC, DEBUG } from '../constants.js';
 import { TIMING, LEVELING, DEATH, SPELLS, SKILLS, PERKS, TERRAIN, CASTLE_GATE, POTION, MANA_POTION, SKILL_XP } from '../config.js';
+import { SPELL_KEYS } from '../input.js';
 import { World } from '../world/world.js';
 import { AREAS } from '../world/areas.js';
 import { ALL_ROOMS, START_ROOM } from '../world/rooms/index.js';
@@ -214,7 +215,7 @@ export class PlayScene {
     if (DEBUG) this.debugKeys(input);
     if (input.wasPressed('potion')) this.drinkPotion();
     if (input.wasPressed('manaPotion')) this.drinkManaPotion();
-    for (let i = 0; i < 4; i++) if (input.wasPressed(`spell${i + 1}`)) player.selectSpell(i);
+    for (let i = 0; i < SPELL_KEYS; i++) if (input.wasPressed(`spell${i + 1}`)) player.selectSpell(i);
     if (input.wheel) player.cycleSpell(input.wheel);
 
     this.interactTarget = this.findInteraction();
@@ -311,7 +312,7 @@ export class PlayScene {
     const s = (id) => p.skills[id].level;
     const line = `[run] ${formatTime(p.stats.playTime)} ${event} | Lv ${p.level} (${Math.floor(p.xp)}/${xpToNext(p.level)} xp) `
       + `HP ${p.maxHp} MP ${p.maxMana} | gold ${p.gold} | ${p.sword.name}, ${p.armor.name} | kills ${p.stats.kills} deaths ${p.stats.deaths} `
-      + `| perks ${p.perks.length} (+${p.perkPoints} unspent) | blade ${s('blade')} armor ${s('armor')} evasion ${s('evasion')} `
+      + `| perks ${p.perks.length} (+${p.perkPoints} unspent) | blade ${s('blade')} armor ${s('armor')} `
       + `destruction ${s('destruction')} restoration ${s('restoration')}`;
     console.log(line);
     (globalThis.heroquestRun ??= []).push(line);
@@ -508,9 +509,8 @@ export class PlayScene {
     const { player } = this;
     let damage = playerAttackDamage(player) * this.shatterMult(enemy);
     let label = null;
-    if (player.spinning) damage *= PERKS.blade.whirlwind.damageMult;
     if (player.riposting) {
-      damage *= PERKS.evasion.riposte.damageMult;
+      damage *= PERKS.blade.riposte.damageMult;
       label = 'RIPOSTE!';
     }
     if (Math.random() < heroBonus.critChance(player)) {
@@ -642,7 +642,7 @@ export class PlayScene {
   }
 
   // source: whatever is attacking (an enemy, a projectile, a slam), so a roll that passes
-  // through it gives Evasion XP only once. Returns true if the hit landed.
+  // through it only reads as one dodge. Returns true if the hit landed.
   hurtPlayer(attack, fromX, fromY, source) {
     const { player } = this;
     const dmg = damageToPlayer(attack, player.defense);
@@ -653,7 +653,6 @@ export class PlayScene {
       player.dodged.add(source);
       player.onPerfectDodge();
       this.effects.push(new FloatText('DODGE!', pc.x, pc.y - 14, '#a0e0ff'));
-      this.addSkillXp('evasion', dmg * SKILLS.evasion.xpPerDamage);
     }
     if (result !== true) return false;
     this.effects.push(new FloatText(`-${hpBefore - player.hp}`, pc.x, pc.y - 14, '#ff8080'));

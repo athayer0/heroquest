@@ -1,4 +1,4 @@
-// Skills: Blade, Armor, Evasion, Destruction and Restoration level up through use.
+// Skills: Blade, Armor, Destruction and Restoration level up through use.
 // Every point of skill XP also goes into the hero's XP the moment it's earned.
 // Perks are bought with perk points (one per hero level) once their skill is high enough.
 import { SKILLS, SKILL_XP, LEVELING, PERKS } from '../config.js';
@@ -80,7 +80,6 @@ const pct = (player, id, perLevel) => (perLevel * (player.skills[id].level - 1))
 export const skillBonus = {
   swordDamageMult: (p) => 1 + pct(p, 'blade', SKILLS.blade.damagePctPerLevel),
   defense: (p) => Math.floor(p.skills.armor.level / SKILLS.armor.levelsPerDefense),
-  rollCooldownMult: (p) => Math.max(0, 1 - pct(p, 'evasion', SKILLS.evasion.rollCooldownPctPerLevel)),
   spellDamageMult: (p) => 1 + pct(p, 'destruction', SKILLS.destruction.damagePctPerLevel),
   healMult: (p) => 1 + pct(p, 'restoration', SKILLS.restoration.healPctPerLevel),
   manaRegenMult: (p) => 1 + pct(p, 'restoration', SKILLS.restoration.manaRegenPctPerLevel),
@@ -98,9 +97,6 @@ export const heroBonus = {
   },
   knockbackMult: (p) => Math.max(0, 1 + perkPct(p, 'knockbackPct')),
   thorns: (p) => perkPct(p, 'thornsPct'),
-  rollCooldownMult: (p) => skillBonus.rollCooldownMult(p) * Math.max(0, 1 + perkPct(p, 'rollCooldownPct')),
-  rollSpeedMult: (p) => 1 + perkPct(p, 'rollDistancePct'),
-  rollsBeforeCooldown: (p) => 1 + perkValue(p, 'extraRolls'),
   spellDamageMult: (p) => skillBonus.spellDamageMult(p),
   destructionCostMult: (p) => Math.max(0, 1 + perkPct(p, 'destructionCostPct')),
   boltPierce: (p) => perkValue(p, 'boltPierce'),
@@ -116,7 +112,6 @@ export function bonusText(player, id) {
   switch (id) {
     case 'blade': return `SWORD DMG +${p100(skillBonus.swordDamageMult(player))}%`;
     case 'armor': return `DEFENSE +${skillBonus.defense(player)}`;
-    case 'evasion': return `ROLL WAIT -${p100(skillBonus.rollCooldownMult(player))}%`;
     case 'destruction': return `SPELL DMG +${p100(skillBonus.spellDamageMult(player))}%`;
     case 'restoration': return `HEAL+${p100(skillBonus.healMult(player))}% MP+${p100(skillBonus.manaRegenMult(player))}%`;
     default: return '';

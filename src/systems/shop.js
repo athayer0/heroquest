@@ -2,6 +2,7 @@
 // Gear auto-equips on purchase; anything at or below your current tier is "owned".
 // The Magic tab sells spell tomes (learned once) and mana potions.
 import { SWORDS, ARMOR, POTION, MANA_POTION, SPELLS, SHOPS } from '../config.js';
+import { SPELL_KEYS } from '../input.js';
 import { spellSummary } from './magic.js';
 import { playerAttackDamage } from './combat.js';
 
@@ -60,7 +61,10 @@ export function buy(player, tab, index) {
   }
   if (item.kind === 'tome') {
     player.learnSpell(item.spell);
-    return { ok: true, message: `LEARNED ${SPELLS[item.spell].name.toUpperCase()}! IT'S ON KEY ${player.spellIndex + 1}.` };
+    // Spells past the last number key can only be reached with the wheel.
+    const key = player.spellIndex + 1;
+    const where = key <= SPELL_KEYS ? `IT'S ON KEY ${key}.` : 'SCROLL TO SELECT IT.';
+    return { ok: true, message: `LEARNED ${SPELLS[item.spell].name.toUpperCase()}! ${where}` };
   }
   player[tab.tierKey] = item.tier;
   return { ok: true, message: `EQUIPPED ${item.name.toUpperCase()}!` };

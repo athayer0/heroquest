@@ -11,12 +11,16 @@ const KEYMAP = {
   KeyQ: 'potion',
   KeyR: 'manaPotion',
   KeyM: 'map',
-  Digit1: 'spell1', Digit2: 'spell2', Digit3: 'spell3', Digit4: 'spell4',
+  Digit1: 'spell1', Digit2: 'spell2', Digit3: 'spell3', Digit4: 'spell4', Digit5: 'spell5',
   Escape: 'pause',
   Enter: 'confirm',
   // Debug keys, only acted on with ?debug in the URL (see PlayScene.debugKeys).
   KeyB: 'debugBurn', KeyC: 'debugChill', KeyT: 'debugTestRoom', KeyK: 'debugThrone', KeyP: 'debugSkills', KeyG: 'debugGold',
 };
+
+// How many spells a number key can reach (the Digit* bindings above). Spells past this are
+// only selectable with the mouse wheel.
+export const SPELL_KEYS = Object.values(KEYMAP).filter((action) => /^spell\d+$/.test(action)).length;
 
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
 

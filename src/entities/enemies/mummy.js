@@ -1,5 +1,5 @@
-// Mummy: slow but relentless. Always walks straight at the hero and never stops to wander,
-// so keep moving and chip away at it.
+// Mummy: relentless. Always walks straight at the hero and never stops to wander, and quick
+// enough that you can only just outrun it, so keep moving and chip away at it.
 import { Enemy, enemySprite } from '../enemy.js';
 import { MUMMY } from '../../gfx/art.js';
 import { dirTo } from '../../util.js';
