@@ -61,98 +61,6 @@ export const SIGN = [
   '................',
 ];
 
-// ---------- Player ----------
-// k outline, g tunic, G tunic dark, s skin, h hair, b boots/belt
-const HEAD_DOWN = [
-  '......kkkk......',
-  '....kkggggkk....',
-  '...kggggggggk...',
-  '...kGGGGGGGGk...',
-  '...khsssssshk...',
-  '...kskssssksk...',
-  '...kssssssssk...',
-  '....kssssssk....',
-];
-const HEAD_UP = [
-  '......kkkk......',
-  '....kkggggkk....',
-  '...kggggggggk...',
-  '...kggggggggk...',
-  '...kGhhhhhhGk...',
-  '...khhhhhhhhk...',
-  '...khhhhhhhhk...',
-  '....khhhhhhk....',
-];
-const BODY_FRONT = [
-  '...kkggggggkk...',
-  '..ksggggggggsk..',
-  '..ksgGggggGgsk..',
-  '...kbbbbbbbbk...',
-  '...kggggggggk...',
-];
-const LEGS_FRONT_N = [
-  '...kGGGkkGGGk...',
-  '...kbbk..kbbk...',
-  '...kkkk..kkkk...',
-];
-const LEGS_FRONT_A = [
-  '...kGGGkkGGGk...',
-  '...kbbk..kkkk...',
-  '...kkkk.........',
-];
-const LEGS_FRONT_B = [
-  '...kGGGkkGGGk...',
-  '...kkkk..kbbk...',
-  '.........kkkk...',
-];
-
-const HEAD_SIDE = [
-  '......kkkk......',
-  '....kkggggk.....',
-  '...kggggggggk...',
-  '..kgggGGGGGGk...',
-  '..kgkhhsssssk...',
-  '...khhssskssk...',
-  '...khhsssssssk..',
-  '....khssssssk...',
-];
-const BODY_SIDE = [
-  '....kkggggkk....',
-  '....kgggssk.....',
-  '....kgGggk......',
-  '....kbbbbk......',
-  '....kggggk......',
-];
-const LEGS_SIDE_N = [
-  '....kGGGGk......',
-  '....kbbbbk......',
-  '....kkkkkk......',
-];
-const LEGS_SIDE_A = [
-  '...kGGkGGk......',
-  '..kbbk.kbbk.....',
-  '..kkkk.kkkk.....',
-];
-
-// Each facing: [idle, walkA, walkB]. Left is the right art mirrored.
-export const PLAYER_ART = {
-  down: [
-    [...HEAD_DOWN, ...BODY_FRONT, ...LEGS_FRONT_N],
-    [...HEAD_DOWN, ...BODY_FRONT, ...LEGS_FRONT_A],
-    [...HEAD_DOWN, ...BODY_FRONT, ...LEGS_FRONT_B],
-  ],
-  up: [
-    [...HEAD_UP, ...BODY_FRONT, ...LEGS_FRONT_N],
-    [...HEAD_UP, ...BODY_FRONT, ...LEGS_FRONT_A],
-    [...HEAD_UP, ...BODY_FRONT, ...LEGS_FRONT_B],
-  ],
-  right: [
-    [...HEAD_SIDE, ...BODY_SIDE, ...LEGS_SIDE_N],
-    [...HEAD_SIDE, ...BODY_SIDE, ...LEGS_SIDE_A],
-    [...HEAD_SIDE, ...BODY_SIDE, ...LEGS_SIDE_N],
-  ],
-};
-
 // ---------- Sword (pointing up; rotated/flipped for other facings) ----------
 // k outline, w blade light, W blade shade, c crossguard, g grip
 export const SWORD_ART = [
@@ -483,41 +391,6 @@ export const BRAZIER = [
   ],
 ];
 
-// ---------- NPCs ----------
-// k outline, h hair, s skin, r robe, R robe dark, w beard
-const NPC_HEAD = [
-  '................',
-  '.....kkkkkk.....',
-  '....khhhhhhk....',
-  '...khhhhhhhhk...',
-  '...khsssssshk...',
-  '...kskssssksk...',
-];
-const NPC_ROBE_BOTTOM = [
-  '..ksrrRrrRrrsk..',
-  '...krrrrrrrrk...',
-  '...krrrrrrrrk...',
-  '..krrrrrrrrrrk..',
-  '..kRRRRRRRRRRk..',
-  '...kkkkkkkkkk...',
-];
-export const VILLAGER = [
-  ...NPC_HEAD,
-  '...kssssssssk...',
-  '....kssssssk....',
-  '...kkrrrrrrkk...',
-  '..ksrrrrrrrrsk..',
-  ...NPC_ROBE_BOTTOM,
-];
-export const ELDER = [
-  ...NPC_HEAD,
-  '...kswwwwwwsk...',
-  '....kwwwwwwk....',
-  '...kkrwwwwrkk...',
-  '..ksrrrwwrrrsk..',
-  ...NPC_ROBE_BOTTOM,
-];
-
 // ---------- Items ----------
 // k outline, c cork, g glass, r potion, w shine
 export const POTION = [
@@ -571,23 +444,3 @@ const DARK_LORD_HALF = [
 ];
 export const DARK_LORD = DARK_LORD_HALF.map((row) => row + [...row].reverse().join(''));
 
-// ---------- Princess ----------
-// k outline, y crown, h hair, s skin, p dress, P dress shade, w trim, r lips
-export const PRINCESS = [
-  '....k..kk..k....',
-  '....kykyykyk....',
-  '....kyyyyyyk....',
-  '...khhhhhhhhk...',
-  '..khhsssssshhk..',
-  '..khsksssskshk..',
-  '..khsssssssshk..',
-  '..khhssrrsshhk..',
-  '..khhkkkkkkhhk..',
-  '.khhkppwwppkhhk.',
-  '.khkppppppppkhk.',
-  '..ksppppppppsk..',
-  '..kpppPPPPpppk..',
-  '.kppppppppppppk.',
-  '.kPPPPPPPPPPPPk.',
-  '..kkkkkkkkkkkk..',
-];

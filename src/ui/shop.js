@@ -3,7 +3,7 @@ import { SCREEN_W, SCREEN_H } from '../constants.js';
 import { drawText, drawTextCentered, textWidth } from '../gfx/font.js';
 import { makeSprite, px } from '../gfx/sprites.js';
 import { POTION as POTION_ART } from '../gfx/art.js';
-import { getPlayerSprites, getSwordSprite, heroColors } from '../entities/player.js';
+import { getHeroSprites, getSwordSprite } from '../entities/player.js';
 import { SHOP_TABS, itemState, buy, previewText } from '../systems/shop.js';
 import { drawPanel, dimScreen, PANEL } from './panel.js';
 
@@ -116,7 +116,7 @@ export class ShopScene {
     if (tab.id === 'sword') {
       ctx.drawImage(getSwordSprite(item.id), x + 4, y);
     } else if (tab.id === 'armor') {
-      ctx.drawImage(getPlayerSprites(heroColors(item.id)).down[0], x, y);
+      ctx.drawImage(getHeroSprites(item.id).down[0], x, y);
     } else {
       ctx.drawImage(getPotionIcon(), x + 4, y + 3);
     }

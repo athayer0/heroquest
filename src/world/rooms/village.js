@@ -71,7 +71,7 @@ export const VILLAGE_ROOMS = [
         lines: ['The Meadow is just north. Slimes are slow, so take them on one at a time.'],
       },
       {
-        x: 4, y: 8, look: 'villager', name: 'Rosa',
+        x: 4, y: 8, look: 'villager2', name: 'Rosa',
         lines: ['When you level up, you can choose more max HP or more damage. Both are good choices!'],
       },
     ],
@@ -98,7 +98,7 @@ export const VILLAGE_ROOMS = [
     npcs: [
       { x: 8, y: 4, look: 'shopkeeper', name: 'Shopkeeper', lines: ['Welcome! Talk to me across the counter.'] },
       {
-        x: 3, y: 7, look: 'guard', name: 'Old Knight',
+        x: 3, y: 7, look: 'veteran', name: 'Old Knight',
         lines: [
           'Castle knights block anything that hits their shield.',
           'They turn slowly, though. Get around to their side or back and strike!',

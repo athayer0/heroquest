@@ -6,7 +6,7 @@ import { COLORS } from '../gfx/palette.js';
 import { drawText, textWidth } from '../gfx/font.js';
 import { px } from '../gfx/sprites.js';
 import { xpToNext, isMaxLevel } from '../systems/leveling.js';
-import { getPlayerSprites, getSwordSprite, heroColors } from '../entities/player.js';
+import { getHeroSprites, getSwordSprite } from '../entities/player.js';
 import { getCoinIcon } from '../entities/pickup.js';
 import { getPotionIcon } from './shop.js';
 
@@ -59,7 +59,7 @@ export function drawHud(ctx, { player, room }) {
   slot(ctx, SLOTS_X, SLOTS_Y);
   ctx.drawImage(getSwordSprite(player.sword.id), SLOTS_X + 6, SLOTS_Y + 2);
   slot(ctx, SLOTS_X + SLOT + 3, SLOTS_Y);
-  ctx.drawImage(getPlayerSprites(heroColors(player.armor.id)).down[0], SLOTS_X + SLOT + 5, SLOTS_Y + 2);
+  ctx.drawImage(getHeroSprites(player.armor.id).down[0], SLOTS_X + SLOT + 5, SLOTS_Y + 2);
 
   // Gold + potions, right-aligned
   const gold = `${player.gold}`;

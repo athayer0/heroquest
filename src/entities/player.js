@@ -1,8 +1,9 @@
 import { PLAYER, SWORD, SWORDS, ARMOR, POTION } from '../config.js';
 import { ROOM_W, ROOM_H } from '../constants.js';
 import { makeSprite, solidColors } from '../gfx/sprites.js';
-import { PLAYER_ART, SWORD_ART } from '../gfx/art.js';
-import { SWORD_COLORS, ARMOR_COLORS } from '../gfx/palette.js';
+import { SWORD_ART } from '../gfx/art.js';
+import { HERO_ART, HERO_COLORS } from '../gfx/characters.js';
+import { SWORD_COLORS } from '../gfx/palette.js';
 import { dirTo } from '../util.js';
 import { newRunStats } from '../systems/save.js';
 
@@ -20,23 +21,20 @@ const BLADE_START = 6; // px from the hand where the blade starts to hurt
 const BLADE_TIP = 18; // px from the hand to the drawn blade tip
 const easeOut = (t) => 1 - (1 - t) * (1 - t);
 
-// Base hero colors; the tunic (g/G) comes from the equipped armor.
-const BASE_COLORS = { k: '#1b1b23', s: '#f2c08a', h: '#8a4b1e', b: '#6b3d1e' };
-
-export function heroColors(armorId) {
-  return { ...BASE_COLORS, ...ARMOR_COLORS[armorId] };
-}
-
+// The hero's look comes from the equipped armor: peasant, leather, chainmail or plate.
+// `tint` renders a single-color silhouette instead (used for the level-up glow).
 const spriteCache = new Map();
-export function getPlayerSprites(colors) {
-  const key = JSON.stringify(colors);
+export function getHeroSprites(armorId, tint = null) {
+  const key = `${armorId}|${tint ?? ''}`;
   if (!spriteCache.has(key)) {
+    const art = HERO_ART[armorId];
+    const colors = tint ? solidColors(HERO_COLORS[armorId], tint) : HERO_COLORS[armorId];
     const build = (frames, flip = false) => frames.map((f) => makeSprite(f, colors, flip));
     spriteCache.set(key, {
-      down: build(PLAYER_ART.down),
-      up: build(PLAYER_ART.up),
-      right: build(PLAYER_ART.right),
-      left: build(PLAYER_ART.right, true),
+      down: build(art.down),
+      up: build(art.up),
+      right: build(art.right),
+      left: build(art.right, true),
     });
   }
   return spriteCache.get(key);
@@ -90,10 +88,6 @@ export class Player {
 
   get defense() {
     return PLAYER.defense + this.armor.defense;
-  }
-
-  get colors() {
-    return heroColors(this.armor.id);
   }
 
   // Returns HP healed, or 0 if no potion was used.
@@ -306,7 +300,7 @@ export class Player {
     // Flash while invincible.
     if (this.invulnT > 0 && Math.floor(this.invulnT * 16) % 2 === 0) return;
 
-    const frames = getPlayerSprites(this.colors)[this.facing];
+    const frames = getHeroSprites(this.armor.id)[this.facing];
     const frame = this.moving ? 1 + (Math.floor(this.animT * WALK_FPS) % 2) : 0;
     const px = Math.round(this.x + ox);
     const py = Math.round(this.y + oy);
@@ -328,7 +322,7 @@ export class Player {
 
   // Pulsing golden outline: the hero's silhouette drawn 1px out in each direction.
   drawGlow(ctx, frame, px, py) {
-    const glow = getPlayerSprites(solidColors(this.colors, '#ffe060'))[this.facing][frame];
+    const glow = getHeroSprites(this.armor.id, '#ffe060')[this.facing][frame];
     const pulse = 0.55 + 0.35 * Math.sin(this.glowT * 18);
     ctx.save();
     ctx.globalAlpha = pulse;

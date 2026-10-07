@@ -18,14 +18,6 @@ export const SWORD_COLORS = {
   hero: { k: '#1b1b23', w: '#fff0a0', W: '#e0a830', c: '#c83a3a', g: '#5a2a7a' },
 };
 
-// Hero tunic colors by armor tier (g tunic, G tunic shade).
-export const ARMOR_COLORS = {
-  cloth: { g: '#3fa34d', G: '#2a6e34' },
-  leather: { g: '#a8743a', G: '#6e4a22' },
-  chainmail: { g: '#aab2c4', G: '#6a7286' },
-  plate: { g: '#4a78d8', G: '#e0b040' },
-};
-
 const BASE = {
   outline: '#1b1b23',
   grass: '#5bb04a', grassDark: '#3e8a3a', grassLight: '#86d064',

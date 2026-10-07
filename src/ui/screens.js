@@ -7,7 +7,7 @@ import { Room } from '../world/room.js';
 import { AREAS } from '../world/areas.js';
 import { MEADOW_ROOMS } from '../world/rooms/meadow.js';
 import { ALL_ROOMS } from '../world/rooms/index.js';
-import { getPlayerSprites, getSwordSprite, heroColors } from '../entities/player.js';
+import { getHeroSprites, getSwordSprite } from '../entities/player.js';
 import { npcSprite } from '../entities/npc.js';
 import { getHeartIcon } from '../entities/pickup.js';
 import { loadGame, clearSave } from '../systems/save.js';
@@ -106,7 +106,7 @@ export class TitleScene {
     ctx.translate(heroX, heroY);
     ctx.scale(2, 2);
     ctx.drawImage(getSwordSprite('wooden'), 9, -8);
-    ctx.drawImage(getPlayerSprites(heroColors('cloth')).down[0], 0, 0);
+    ctx.drawImage(getHeroSprites('cloth').down[0], 0, 0);
     ctx.restore();
 
     // Menu
@@ -261,7 +261,7 @@ export class CompleteScene {
     ctx.save();
     ctx.translate(cx - 44, 46);
     ctx.scale(2, 2);
-    ctx.drawImage(getPlayerSprites(heroColors(this.stats.armorId)).down[0], 0, bob);
+    ctx.drawImage(getHeroSprites(this.stats.armorId).down[0], 0, bob);
     ctx.drawImage(npcSprite('princess'), 28, 1 - bob);
     ctx.restore();
     const heart = getHeartIcon();
