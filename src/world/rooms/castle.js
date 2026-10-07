@@ -1,10 +1,12 @@
-// Castle: knights, then the Dark Lord's throne room. Its doorway locks (bossDoor) when the fight starts.
+// Castle (Lv 15): knights and gargoyles, then the Dark Lord's throne room. Its doorway locks
+// (bossDoor) when the fight starts; its gargoyle statues (Z) wake in his third phase.
+// The gallery hides Chain Lightning in a chest behind a cracked wall (W).
 
 export const CASTLE_ROOMS = [
   {
     id: 'castle_hall',
     area: 'castle',
-    pos: [5, 2],
+    pos: [25, 2],
     map: [
       '#######cc#######',
       '#_P____cc____P_#',
@@ -18,21 +20,22 @@ export const CASTLE_ROOMS = [
       '#______cc______#',
       '#######cc#######',
     ],
-    signs: [{ x: 6, y: 8, text: "DARK LORD'S CASTLE\nRecommended Lv 7" }],
+    signs: [{ x: 6, y: 8, text: "DARK LORD'S CASTLE\nRecommended Lv 14" }],
     enemies: [
       { type: 'knight', x: 4, y: 3 },
       { type: 'knight', x: 11, y: 6 },
+      { type: 'gargoyle', x: 7, y: 4 },
     ],
   },
   {
     id: 'castle_gallery',
     area: 'castle',
-    pos: [5, 1],
+    pos: [25, 1],
     map: [
       '################',
-      '#__P___P___P___#',
-      '#______________#',
-      '#_B__________B_#',
+      '#__#___P___P___#',
+      '#__#___________#',
+      '#WW#_________B_#',
       '#______cccccccc_',
       '#______ccccccccc',
       '#______cc_______',
@@ -41,16 +44,18 @@ export const CASTLE_ROOMS = [
       '#__P___cc__P___#',
       '#######cc#######',
     ],
+    chests: [{ id: 'castle_chain_lightning', x: 1, y: 1, contents: { spell: 'chainLightning' } }],
     enemies: [
-      { type: 'knight', x: 4, y: 2 },
+      { type: 'knight', x: 5, y: 2 },
       { type: 'knight', x: 11, y: 7 },
       { type: 'knight', x: 12, y: 2 },
+      { type: 'gargoyle', x: 9, y: 8 },
     ],
   },
   {
     id: 'castle_antechamber',
     area: 'castle',
-    pos: [6, 1],
+    pos: [26, 1],
     map: [
       '#######DD#######',
       '#_B____cc____B_#',
@@ -64,24 +69,25 @@ export const CASTLE_ROOMS = [
       '#_B__________B_#',
       '################',
     ],
-    signs: [{ x: 7, y: 8, text: "THE DARK LORD'S CHAMBER\nThere is no turning back once you enter.\nRecommended Lv 7" }],
+    signs: [{ x: 7, y: 8, text: "THE DARK LORD'S CHAMBER\nThere is no turning back once you enter.\nRecommended Lv 15" }],
     enemies: [
       { type: 'knight', x: 4, y: 2 },
       { type: 'knight', x: 11, y: 7 },
+      { type: 'gargoyle', x: 7, y: 6 },
     ],
   },
   {
     id: 'castle_throne',
     area: 'castle',
-    pos: [6, 0],
-    boss: true,
+    pos: [26, 0],
+    boss: 'darkLord',
     bossDoor: [{ x: 7, y: 10 }, { x: 8, y: 10 }],
     map: [
       '################',
       '#B____cccc____B#',
       '#_____cccc_____#',
       '#P____________P#',
-      '#______________#',
+      '#___Z______Z___#',
       '#P____________P#',
       '#______________#',
       '#P____________P#',

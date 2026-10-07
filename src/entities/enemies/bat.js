@@ -9,8 +9,8 @@ const COLORS = { k: '#1b1b23', b: '#5a3a7a', B: '#8a6aaa', e: '#ff5a5a' };
 const FLAP_FPS = 10;
 
 export class Bat extends Enemy {
-  constructor(x, y) {
-    super('bat', x, y, { x: 2, y: 4, w: 12, h: 8 });
+  constructor(x, y, type = 'bat') {
+    super(type, x, y, { x: 2, y: 4, w: 12, h: 8 });
     this.flying = true;
     this.state = 'fly';
     this.turnT = 0;

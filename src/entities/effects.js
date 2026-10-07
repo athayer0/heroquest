@@ -183,3 +183,43 @@ export class HeartFloat {
     ctx.restore();
   }
 }
+
+// A jagged lightning bolt between two points that flickers and fades.
+export class LightningArc {
+  constructor(from, to, life = 0.28) {
+    this.from = { ...from };
+    this.to = { ...to };
+    this.life = life;
+    this.t = 0;
+  }
+  update(dt) {
+    this.t += dt;
+  }
+  get done() {
+    return this.t >= this.life;
+  }
+  draw(ctx, ox, oy) {
+    if (Math.floor(this.t * 30) % 3 === 2) return; // flicker
+    const { from, to } = this;
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const segments = Math.max(3, Math.round(len / 10));
+    const pts = [from];
+    for (let i = 1; i < segments; i++) {
+      const jitter = (Math.random() - 0.5) * 8;
+      pts.push({ x: from.x + (dx * i) / segments + nx * jitter, y: from.y + (dy * i) / segments + ny * jitter });
+    }
+    pts.push(to);
+    for (const [width, color] of [[3, 'rgba(255,240,120,0.5)'], [1, '#ffffff']]) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x + ox, pts[0].y + oy);
+      for (const pt of pts.slice(1)) ctx.lineTo(pt.x + ox, pt.y + oy);
+      ctx.stroke();
+    }
+  }
+}

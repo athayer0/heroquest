@@ -80,10 +80,11 @@ export class Knight extends Enemy {
     return d.x * v.x + d.y * v.y >= Math.cos((this.stats.frontArcDegrees * Math.PI) / 360);
   }
 
-  hurt(damage, fromX, fromY, swingId) {
-    if (!this.active || swingId === this.lastSwingId) return false;
-    if (this.isFrontal(fromX, fromY)) {
-      this.lastSwingId = swingId;
+  // opts.unblockable: hits the shield can't stop (Chain Lightning strikes from above).
+  hurt(damage, fromX, fromY, swingId = null, opts = {}) {
+    if (!this.active || this.sameSwing(swingId)) return false;
+    if (!opts.unblockable && this.isFrontal(fromX, fromY)) {
+      if (swingId !== null) this.lastSwingId = swingId;
       this.pauseT = this.stats.blockPause;
       return 'blocked';
     }

@@ -1,7 +1,10 @@
-// Base class for all enemies: stats, spawn-in, hit flash, knockback and tile collision.
+// Base class for all enemies: stats, spawn-in, hit flash, knockback, status effects and tile collision.
 // Subclasses implement think(dt, ctx) for behavior and sprite() for drawing.
+// Optional stats flags: noKnockback, immune: ['fire' | 'ice'], weak: ['fire' | 'ice'] (double damage).
 import { ENEMIES, ENEMY_HIT } from '../config.js';
 import { makeSprite, solidColors } from '../gfx/sprites.js';
+import { drawStatusFx } from '../gfx/statusFx.js';
+import { newStatus, isFrozen, statusSpeedMult } from '../systems/status.js';
 import { dirTo } from '../util.js';
 
 const spriteCache = new Map();
@@ -31,6 +34,20 @@ export class Enemy {
     this.lastSwingId = -1;
     this.dead = false;
     this.flying = false; // flyers pass over water
+    this.status = newStatus();
+    this.immune = this.stats.immune ?? [];
+    this.weak = this.stats.weak ?? [];
+    this.noKnockback = this.stats.noKnockback ?? false;
+    this.freezeImmune = false;
+  }
+
+  get frozen() {
+    return isFrozen(this);
+  }
+
+  // No contact damage right now (frozen; a boss may add states, e.g. stunned).
+  get harmless() {
+    return this.frozen;
   }
 
   get hitbox() {
@@ -57,29 +74,48 @@ export class Enemy {
       return;
     }
     this.flashT = Math.max(0, this.flashT - dt);
+    if (this.frozen) {
+      this.kb.t = 0; // can't move or act (the freeze cancelled any wind-up; see onFrozen)
+      return;
+    }
     if (this.kb.t > 0) {
       this.kb.t -= dt;
       this.move(this.kb.x * dt, this.kb.y * dt, ctx.room);
       return;
     }
-    this.think(dt, ctx);
+    // Slowed enemies run their whole behavior at reduced speed: movement and timers alike.
+    this.think(dt * statusSpeedMult(this), ctx);
   }
 
   think() {}
 
   // Returns true if the hit landed, 'blocked' if deflected (see Knight), false otherwise.
-  // A single sword swing can only hit once.
-  hurt(damage, fromX, fromY, swingId) {
-    if (!this.active || swingId === this.lastSwingId) return false;
-    this.lastSwingId = swingId;
+  // A single sword swing can only hit once; swingId is null for hits that aren't swings (spells).
+  hurt(damage, fromX, fromY, swingId = null) {
+    if (!this.active || this.sameSwing(swingId)) return false;
+    if (swingId !== null) this.lastSwingId = swingId;
     this.hp -= damage;
     this.flashT = ENEMY_HIT.flashTime;
-    const c = this.center;
-    const d = dirTo(fromX, fromY, c.x, c.y);
-    this.kb = { x: d.x * ENEMY_HIT.knockbackSpeed, y: d.y * ENEMY_HIT.knockbackSpeed, t: ENEMY_HIT.knockbackTime };
+    if (!this.noKnockback) {
+      const c = this.center;
+      const d = dirTo(fromX, fromY, c.x, c.y);
+      this.kb = { x: d.x * ENEMY_HIT.knockbackSpeed, y: d.y * ENEMY_HIT.knockbackSpeed, t: ENEMY_HIT.knockbackTime };
+    }
     if (this.hp <= 0) this.dead = true;
     this.onHurt?.();
     return true;
+  }
+
+  // Damage with no knockback, flash or swing check (burn ticks). Returns true if it was lethal.
+  loseHp(damage) {
+    if (!this.active) return false;
+    this.hp -= damage;
+    if (this.hp <= 0) this.dead = true;
+    return this.dead;
+  }
+
+  sameSwing(swingId) {
+    return swingId !== null && swingId === this.lastSwingId;
   }
 
   // Axis-separated movement that stops at walls and room edges. Returns which axes were blocked.
@@ -110,6 +146,9 @@ export class Enemy {
     const img = this.flashT > 0 && Math.floor(this.flashT * 40) % 2 === 0 ? s.img.flash : s.img.normal;
     const x = Math.round(this.x + (s.dx ?? 0) + ox);
     const y = Math.round(this.y + (s.dy ?? 0) + oy);
-    ctx.drawImage(img, x, y, s.w ?? img.width, s.h ?? img.height);
+    const w = s.w ?? img.width;
+    const h = s.h ?? img.height;
+    ctx.drawImage(img, x, y, w, h);
+    drawStatusFx(ctx, this, s.img.normal, x, y, w, h);
   }
 }

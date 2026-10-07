@@ -43,12 +43,12 @@ const game = {
     while (this.scenes.length) this.pop();
     this.push(scene);
   },
-  startNewGame() {
-    this.play = new PlayScene(this);
+  startNewGame(slot) {
+    this.play = new PlayScene(this, slot);
     this.replace(this.play);
   },
-  continueGame(save) {
-    this.play = new PlayScene(this, save);
+  continueGame(slot, save) {
+    this.play = new PlayScene(this, slot, save);
     this.replace(this.play);
   },
   returnToTitle() {

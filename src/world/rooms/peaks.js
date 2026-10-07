@@ -1,0 +1,100 @@
+// Frozen Peaks (Lv 12): wolves and ice spirits on snow and sliding ice, between the Lava Cave
+// and the Castle. Frosthold (see villages.js) sits between the Base and the Slope. The slope
+// has a door north to the Frost Wyrm's lair, a side room off the main path. The last room holds
+// the Castle's sealed gate.
+
+export const PEAKS_ROOMS = [
+  {
+    id: 'peaks_base',
+    area: 'peaks',
+    pos: [50, 4],
+    map: [
+      'TTTTTTT..TTTTTTT',
+      'TT.....::....TTT',
+      'T...R..::......T',
+      'T......::..**..T',
+      'T..***.::.****.T',
+      'T.****.::..**..T',
+      'T..**..::......T',
+      'T......::...R..T',
+      'TT..TS.::......T',
+      'TTT....::...TTTT',
+      'TTTTTTT..TTTTTTT',
+    ],
+    signs: [{ x: 5, y: 8, text: 'FROZEN PEAKS\nRecommended Lv 12\nOn ice you keep sliding until you steer the other way. Careful!' }],
+    enemies: [
+      { type: 'wolf', x: 11, y: 2 },
+      { type: 'iceSpirit', x: 3, y: 7 },
+    ],
+  },
+  {
+    id: 'peaks_slope',
+    area: 'peaks',
+    pos: [50, 2],
+    map: [
+      'TTTTTTT..TTTTTTT',
+      'T.....#..#.....T',
+      'T..T..#..#..R..T',
+      'T.....S........T',
+      'T..*****........',
+      'T.*******.......',
+      'T..*****........',
+      'T........R.....T',
+      'TT..T......T...T',
+      'TTT.........TTTT',
+      'TTTTTTT..TTTTTTT',
+    ],
+    signs: [{ x: 6, y: 3, text: "FROST WYRM'S LAIR (NORTH)\nIt guards a seal of the Castle gate.\nRecommended Lv 13" }],
+    enemies: [
+      { type: 'wolf', x: 12, y: 5 },
+      { type: 'wolf', x: 6, y: 8 },
+      { type: 'iceSpirit', x: 11, y: 2 },
+    ],
+  },
+  {
+    id: 'peaks_lair',
+    area: 'peaks',
+    pos: [50, 1],
+    boss: 'frostWyrm',
+    bossDoor: [{ x: 7, y: 10 }, { x: 8, y: 10 }],
+    map: [
+      '################',
+      '#T............T#',
+      '#..............#',
+      '#...**....**...#',
+      '#..............#',
+      '#..R........R..#',
+      '#..............#',
+      '#...**....**...#',
+      '#..............#',
+      '#T............T#',
+      '#######..#######',
+    ],
+  },
+  {
+    id: 'peaks_gate',
+    area: 'peaks',
+    pos: [51, 2],
+    map: [
+      '#######..#######',
+      '#T....#..#....T#',
+      '#.....#..#.....#',
+      '#..T.S#..#..T..#',
+      '...............#',
+      '.....**..**....#',
+      '...............#',
+      '#..R.......R...#',
+      '#.....T....T...#',
+      '#T............T#',
+      '################',
+    ],
+    signs: [{ x: 5, y: 3, text: "THE CASTLE GATE (NORTH)\nTwo seals open it: the Sand Pharaoh's, from the Desert, and the Frost Wyrm's, from its lair here in the Peaks.\nRecommended Lv 14" }],
+    // The Castle's sealed gate, one socket per seal; it opens once you hold CASTLE_GATE.sealsRequired.
+    sealGate: [{ x: 7, y: 1 }, { x: 8, y: 1 }],
+    enemies: [
+      { type: 'iceSpirit', x: 12, y: 7 },
+      { type: 'wolf', x: 4, y: 8 },
+      { type: 'iceSpirit', x: 3, y: 5 },
+    ],
+  },
+];

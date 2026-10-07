@@ -11,6 +11,11 @@ export const SCREEN_H = ROOM_H + HUD_H; // 216
 
 export const STEP = 1 / 60; // fixed update timestep (seconds)
 
+// Debug keys (see PlayScene.debugKeys) are on when the page URL has ?debug or #debug.
+// A red DEBUG label in the corner of the play area shows they're on.
+export const DEBUG = typeof location !== 'undefined'
+  && (new URLSearchParams(location.search).has('debug') || location.hash === '#debug');
+
 // Room-edge directions used by neighbors and transitions.
 export const EDGE_VEC = {
   n: { x: 0, y: -1 },

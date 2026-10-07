@@ -60,11 +60,20 @@ export const VILLAGE_ROOMS = [
         lines: [
           "Hero! Thank goodness you're awake.",
           'The Dark Lord has captured the Princess and locked her away in his castle, far to the north.',
-          'The road there leads through the Meadow, the Forest and a dark Cave. Each is more dangerous than the last.',
+          'The road there leads through the Meadow, the Forest, the Desert, a cave of fire and the Frozen Peaks. Each is more dangerous than the last.',
           'Start with the slimes in the Meadow, and heed the signs. They tell you how strong you should be.',
-          'Spend your gold at the market to the east. Better swords and armor make all the difference.',
+          'Spend your gold at the market to the east. Better swords and armor make all the difference, and the towns further along the road sell even finer gear.',
           "And if you fall, don't despair. You'll wake up here in the village. Now go, and bring her home!",
         ],
+        // Handed over the first time you talk to him (see PlayScene.interact).
+        gift: {
+          spell: 'firebolt',
+          lines: [
+            "Wait! One more thing. Take this: Firebolt, the first spell every hero learns.",
+            'Right-click to hurl it wherever you aim. Spells use mana, the blue bar, which refills on its own.',
+            'The market sells more magic, and mana potions too. Press R to drink one.',
+          ],
+        },
       },
       {
         x: 10, y: 1, look: 'guard', name: 'Guard',
@@ -72,7 +81,10 @@ export const VILLAGE_ROOMS = [
       },
       {
         x: 4, y: 8, look: 'villager2', name: 'Rosa',
-        lines: ['When you level up, you can choose more max HP or more damage. Both are good choices!'],
+        lines: [
+          'When you level up, you can choose more max HP or more max mana. Both are good choices!',
+          "And whatever you do, you get better at it. Swing your sword, cast spells, take hits, roll past danger. It all makes you stronger!",
+        ],
       },
     ],
   },
@@ -93,7 +105,7 @@ export const VILLAGE_ROOMS = [
       'T..............T',
       'TTTTTTTTTTTTTTTT',
     ],
-    shop: true, // the counter (C) opens the shop
+    shop: 'village', // the counter (C) opens the shop (see SHOPS)
     signs: [{ x: 6, y: 8, text: 'VILLAGE MARKET\nSwords, armor and potions.\nStep up to the counter!' }],
     npcs: [
       { x: 8, y: 4, look: 'shopkeeper', name: 'Shopkeeper', lines: ['Welcome! Talk to me across the counter.'] },
@@ -101,8 +113,9 @@ export const VILLAGE_ROOMS = [
         x: 3, y: 7, look: 'veteran', name: 'Old Knight',
         lines: [
           'Castle knights block anything that hits their shield.',
+          "And they say the old castle walls hide secrets. If you see a crack in the stone, give it a good whack!",
           'They turn slowly, though. Get around to their side or back and strike!',
-          'And if you need supplies on the road, a travelling merchant has set up camp at the far end of the Cave. Look east, just before the path up to the Castle.',
+          'And if you need supplies on the road, a travelling merchant has set up camp at the far end of the Cave. Look east, just before the climb into the Frozen Peaks.',
         ],
       },
     ],

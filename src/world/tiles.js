@@ -1,8 +1,9 @@
 // Tile definitions and per-palette tile rendering.
 import { TILE } from '../constants.js';
+import { TERRAIN } from '../config.js';
 import { makeCanvas, makeSprite, px } from '../gfx/sprites.js';
 import { AREA_PALETTES } from '../gfx/palette.js';
-import { TREE, ROCK, SIGN, FENCE, BUSH, PILLAR, BRAZIER } from '../gfx/art.js';
+import { TREE, ROCK, SIGN, FENCE, BUSH, PILLAR, BRAZIER, CACTUS, GARGOYLE } from '../gfx/art.js';
 
 // Map characters used in room layouts.
 //   .  grass      ,  flowers    :  path       _  floor      c  carpet
@@ -10,8 +11,13 @@ import { TREE, ROCK, SIGN, FENCE, BUSH, PILLAR, BRAZIER } from '../gfx/art.js';
 //   T  tree       b  bush       R  rock       S  sign       F  fence
 //   r  roof       h  house wall w  window     d  house door C  shop counter
 //   P  pillar     B  brazier
+//   %  quicksand (half speed)   =  lava (impassable)   ^  fire vent   *  ice (slippery)
+//   G  sealed gate, empty socket   J  sealed gate, socket holding a seal
+//   u  dunes (ground)   Y  cactus
+//   Z  gargoyle statue (wakes up in the Dark Lord's third phase)
+//   W  cracked wall: looks like a wall, but a sword hit or a bolt breaks it open
 // Overlay tiles are drawn on top of the room's ground tile.
-// `low` tiles (water) can be crossed by flyers and projectiles.
+// `low` tiles (water, lava) can be crossed by flyers and projectiles.
 export const TILES = {
   '.': { name: 'grass', solid: false },
   ',': { name: 'flowers', solid: false },
@@ -34,7 +40,30 @@ export const TILES = {
   'F': { name: 'fence', solid: true, overlay: true },
   'P': { name: 'pillar', solid: true, overlay: true },
   'B': { name: 'brazier', solid: true, overlay: true },
+  '%': { name: 'quicksand', solid: false },
+  '=': { name: 'lava', solid: true, low: true },
+  '^': { name: 'vent', solid: false },
+  '*': { name: 'ice', solid: false },
+  'u': { name: 'dune', solid: false },
+  'Y': { name: 'cactus', solid: true, overlay: true },
+  'Z': { name: 'statue', solid: true, overlay: true },
+  'W': { name: 'crackedWall', solid: true },
+  'G': { name: 'gate', solid: true },
+  'J': { name: 'gateSealed', solid: true },
 };
+
+// Fire vents erupt on a cycle: idle, then a warning glow, then a short eruption. Vents on
+// alternating (checkerboard) tiles are half a cycle apart. Returns 'idle' | 'glow' | 'erupt'
+// and the eruption's number (so each one hurts only once).
+export function ventPhase(tx, ty, time) {
+  const { period, glowTime, eruptTime } = TERRAIN.vent;
+  const shifted = time + ((tx + ty) % 2) * (period / 2);
+  const t = shifted % period;
+  const cycle = Math.floor(shifted / period);
+  if (t >= period - eruptTime) return { state: 'erupt', t: t - (period - eruptTime), cycle };
+  if (t >= period - eruptTime - glowTime) return { state: 'glow', t: t - (period - eruptTime - glowTime), cycle };
+  return { state: 'idle', t, cycle };
+}
 
 export function isSolidChar(ch, flying = false) {
   const def = TILES[ch];
@@ -98,6 +127,13 @@ const GROUND = {
     for (const x of [7, 15]) px(g, P.wallDark, x, 0, 1, 7);
     for (const x of [3, 11]) px(g, P.wallDark, x, 8, 1, 7);
   },
+  // A wall with a faint crack: easy to miss unless you're looking for it.
+  crackedWall(g, P) {
+    GROUND.wall(g, P);
+    for (const [x, y] of [[9, 1], [8, 2], [8, 3], [9, 4], [10, 5], [10, 6], [9, 9], [8, 10], [9, 11], [10, 12], [11, 13]]) {
+      px(g, P.wallDark, x, y);
+    }
+  },
   door(g, P) {
     GROUND.wall(g, P);
     px(g, P.wallDark, 2, 2, 12, 14);
@@ -148,6 +184,39 @@ const GROUND = {
     px(g, P.woodDark, 7, 3, 1, 13);
     px(g, P.gold, 10, 9, 1, 2);
   },
+  // Wind-blown ridges on the ground color.
+  dune(g, P) {
+    GROUND.grass(g, P);
+    for (let x = 0; x < TILE; x++) {
+      for (const base of [5, 12]) {
+        const y = base + Math.round(1.5 * Math.sin(((x + base) / TILE) * Math.PI * 2));
+        px(g, P.grassLight, x, y);
+        px(g, P.grassDark, x, y + 1);
+      }
+    }
+  },
+  quicksand(g, P) {
+    px(g, P.sand, 0, 0, TILE, TILE);
+    // A slow spiral of darker sand.
+    for (const [x, y] of [[7, 7], [8, 7], [9, 8], [9, 9], [8, 10], [6, 10], [5, 9], [4, 7], [5, 5], [7, 4], [10, 4], [12, 6], [12, 9]]) {
+      px(g, P.sandDark, x, y);
+    }
+    for (const [x, y] of [[2, 2], [13, 13], [2, 13], [14, 2]]) px(g, P.sandLight, x, y);
+  },
+  ice(g, P) {
+    px(g, P.ice, 0, 0, TILE, TILE);
+    px(g, P.iceDark, 0, 15, 16, 1);
+    px(g, P.iceDark, 15, 0, 1, 16);
+    for (let i = 0; i < 5; i++) px(g, P.iceLight, 3 + i, 9 - i); // shine streaks
+    for (let i = 0; i < 3; i++) px(g, P.iceLight, 9 + i, 13 - i);
+    for (const [x, y] of [[11, 3], [12, 4], [12, 5], [4, 12]]) px(g, P.iceDark, x, y); // cracks
+  },
+  gate(g, P) {
+    paintGate(g, P, false);
+  },
+  gateSealed(g, P) {
+    paintGate(g, P, true);
+  },
   counter(g, P) {
     px(g, P.wood, 0, 0, TILE, TILE);
     px(g, P.woodLight, 0, 0, 16, 4);
@@ -156,6 +225,47 @@ const GROUND = {
     px(g, P.woodShadow, 0, 15, 16, 1);
   },
 };
+
+// A heavy stone gate with one round socket per tile; a filled socket holds a glowing seal.
+function paintGate(g, P, sealed) {
+  px(g, P.stoneDark, 0, 0, TILE, TILE);
+  px(g, P.stoneMid, 1, 0, 14, 16);
+  px(g, P.stone, 1, 0, 14, 1);
+  for (const y of [5, 11]) px(g, P.stoneDark, 1, y, 14, 1);
+  px(g, P.stoneDark, 4, 4, 8, 8); // socket rim
+  px(g, P.outline, 5, 5, 6, 6);
+  if (sealed) {
+    px(g, P.gold, 5, 5, 6, 6);
+    px(g, P.fireLight, 6, 6, 4, 4);
+    px(g, '#ffffff', 6, 6, 2, 1);
+  }
+}
+
+function paintLava(g, P, frame) {
+  px(g, P.lava, 0, 0, TILE, TILE);
+  for (const [x, y, w] of [[2, 3, 4], [9, 6, 5], [4, 11, 3], [11, 13, 3]]) {
+    const dx = frame ? 1 : 0;
+    px(g, P.lavaLight, (x + dx) % 14, y, w, 1);
+    px(g, P.lavaDark, (x + 2 - dx) % 14, y + 2, w - 1, 1);
+  }
+  px(g, P.lavaLight, frame ? 12 : 6, frame ? 2 : 9, 2, 2);
+}
+
+// Vent frames: 0 idle, 1–2 warning glow (pulsing), 3–4 eruption.
+function paintVent(g, P, frame) {
+  px(g, P.ventDark, 0, 0, TILE, TILE);
+  px(g, P.vent, 1, 1, 14, 14);
+  const slit = frame === 0 ? P.ventDark : frame === 1 ? P.fireRed : P.fire;
+  for (const y of [4, 7, 10]) px(g, slit, 3, y, 10, 2);
+  if (frame >= 3) {
+    // Flames bursting up out of the grate.
+    const flicker = frame === 3 ? 0 : 1;
+    px(g, P.fireRed, 2, 2, 12, 12);
+    px(g, P.fire, 3, 1 + flicker, 10, 12);
+    px(g, P.fireLight, 5, 3 + flicker, 6, 8);
+    px(g, '#ffffff', 7, 6 + flicker, 2, 3);
+  }
+}
 
 function paintWater(g, P, frame) {
   px(g, P.water, 0, 0, TILE, TILE);
@@ -175,6 +285,8 @@ const OVERLAYS = {
   sign: [[SIGN], (P) => ({ k: P.outline, w: P.wood, d: P.woodDark, W: P.woodShadow })],
   fence: [[FENCE], (P) => ({ k: P.outline, w: P.wood, W: P.woodDark })],
   pillar: [[PILLAR], (P) => ({ k: P.outline, s: P.stone, S: P.stoneMid, d: P.stoneDark })],
+  statue: [[GARGOYLE[0]], (P) => ({ k: P.outline, g: P.stone, G: P.stoneMid, D: P.stoneDark, e: P.stoneDark, w: P.stone })],
+  cactus: [[CACTUS], (P) => ({ k: P.outline, g: P.cactus, G: P.cactusDark, l: P.cactusLight })],
   brazier: [BRAZIER, (P) => ({ k: P.outline, I: P.iron, i: P.ironDark, r: P.fireRed, f: P.fire, F: P.fireLight })],
 };
 
@@ -185,6 +297,8 @@ function buildTileSet(paletteName) {
     set[name] = [makeCanvas(TILE, TILE, (g) => paint(g, P))];
   }
   set.water = [0, 1, 2, 3].map((f) => makeCanvas(TILE, TILE, (g) => paintWater(g, P, f)));
+  set.lava = [0, 1].map((f) => makeCanvas(TILE, TILE, (g) => paintLava(g, P, f)));
+  set.vent = [0, 1, 2, 3, 4].map((f) => makeCanvas(TILE, TILE, (g) => paintVent(g, P, f)));
   for (const [name, [frames, colors]] of Object.entries(OVERLAYS)) {
     set[name] = frames.map((art) => makeSprite(art, colors(P)));
   }
@@ -196,15 +310,27 @@ export function getTileSet(paletteName) {
   return (tileSetCache[paletteName] ??= buildTileSet(paletteName));
 }
 
-const ANIM_FPS = { water: 2, brazier: 6 };
+const ANIM_FPS = { water: 2, brazier: 6, lava: 2 };
 
 function frameOf(set, name, time) {
   const frames = set[name];
   return frames[Math.floor(time * (ANIM_FPS[name] ?? 1)) % frames.length];
 }
 
-export function drawTile(ctx, set, ch, groundCh, x, y, time) {
+function ventFrame(set, tx, ty, time) {
+  const { state, t } = ventPhase(tx, ty, time);
+  if (state === 'idle') return set.vent[0];
+  const fast = Math.floor(t * (state === 'glow' ? 8 : 14)) % 2;
+  return set.vent[(state === 'glow' ? 1 : 3) + fast];
+}
+
+// (tx, ty): the tile's coordinates in the room, for tiles that animate per position (vents).
+export function drawTile(ctx, set, ch, groundCh, x, y, time, tx = 0, ty = 0) {
   const def = TILES[ch] ?? TILES['.'];
+  if (def.name === 'vent') {
+    ctx.drawImage(ventFrame(set, tx, ty, time), x, y);
+    return;
+  }
   if (def.overlay) {
     const ground = TILES[groundCh] ?? TILES['.'];
     ctx.drawImage(frameOf(set, ground.name, time), x, y);

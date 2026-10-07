@@ -10,31 +10,68 @@ import { ALL_ROOMS } from '../world/rooms/index.js';
 import { getHeroSprites, getSwordSprite } from '../entities/player.js';
 import { npcSprite } from '../entities/npc.js';
 import { getHeartIcon } from '../entities/pickup.js';
-import { loadGame, clearSave } from '../systems/save.js';
+import { loadAllSaves } from '../systems/save.js';
 import { formatTime } from '../util.js';
 import { drawPanel, dimScreen, PANEL } from './panel.js';
 
-const anyKey = (input) => ['attack', 'interact', 'confirm', 'pause'].some((a) => input.wasPressed(a));
-const confirmKey = (input) => ['attack', 'interact', 'confirm'].some((a) => input.wasPressed(a));
+const anyKey = (input) => ['dodge', 'interact', 'confirm', 'pause'].some((a) => input.wasPressed(a));
+const confirmKey = (input) => ['dodge', 'interact', 'confirm'].some((a) => input.wasPressed(a));
 
 // ---------- Title ----------
+
+const FILE_OPTIONS = ['CONTINUE', 'NEW GAME', 'BACK'];
+
+// Arrow keys and the mouse over a list of rects. Returns the new selection and whether it was chosen.
+function menuInput(input, selected, rects, prevKeys, nextKeys) {
+  let sel = selected;
+  if (prevKeys.some((k) => input.wasPressed(k))) sel = Math.max(0, sel - 1);
+  if (nextKeys.some((k) => input.wasPressed(k))) sel = Math.min(rects.length - 1, sel + 1);
+  let clicked = false;
+  rects.forEach((r, i) => {
+    if (input.pointerMoved && input.pointerIn(r)) sel = i;
+    if (input.clickedIn(r)) {
+      sel = i;
+      clicked = true;
+    }
+  });
+  return { sel, chosen: clicked || confirmKey(input) };
+}
 
 export class TitleScene {
   constructor(game) {
     this.game = game;
-    this.save = loadGame();
-    this.selected = this.save ? 1 : 0; // default to Continue when there is a save
-    this.confirming = false; // "erase your save?" prompt
+    this.saves = loadAllSaves(); // one entry per file, null when empty
+    // Start on the most recently saved file.
+    this.selected = 0;
+    this.saves.forEach((s, i) => {
+      if (s && (s.savedAt ?? 0) > (this.saves[this.selected]?.savedAt ?? -1)) this.selected = i;
+    });
+    this.mode = 'files'; // 'files' → 'file' (continue / new game / back) → 'confirm' (overwrite?)
+    this.fileChoice = 0;
     this.confirmChoice = 1; // 0 = yes, 1 = no
     this.t = 0;
     const bgDef = MEADOW_ROOMS[0];
     this.backdrop = new Room(bgDef, AREAS[bgDef.area]);
   }
 
+  fileLabel(i) {
+    return this.saves[i] ? `FILE ${i + 1}` : `FILE ${i + 1} - EMPTY`;
+  }
+
   // Clickable areas (game pixels).
   itemRect(i) {
-    const w = textWidth(i === 0 ? 'START' : 'CONTINUE') + 20;
+    const w = textWidth(this.fileLabel(i)) + 20;
     return { x: SCREEN_W / 2 - w / 2, y: 123 + i * 16, w, h: 13 };
+  }
+
+  get filePanel() {
+    const w = 120;
+    const h = 66;
+    return { x: (SCREEN_W - w) / 2, y: (SCREEN_H - h) / 2, w, h };
+  }
+
+  fileOptionRect(i) {
+    return { x: SCREEN_W / 2 - 40, y: this.filePanel.y + 20 + i * 14, w: 80, h: 13 };
   }
 
   confirmRect(i) {
@@ -45,45 +82,44 @@ export class TitleScene {
   update(dt) {
     this.t += dt;
     const input = this.game.input;
+    const slot = this.selected;
 
-    if (this.confirming) {
-      if (input.wasPressed('left') || input.wasPressed('up')) this.confirmChoice = 0;
-      if (input.wasPressed('right') || input.wasPressed('down')) this.confirmChoice = 1;
-      let clicked = false;
-      for (const i of [0, 1]) {
-        if (input.pointerMoved && input.pointerIn(this.confirmRect(i))) this.confirmChoice = i;
-        if (input.clickedIn(this.confirmRect(i))) {
-          this.confirmChoice = i;
-          clicked = true;
-        }
-      }
-      if (input.wasPressed('pause')) this.confirming = false;
-      else if (confirmKey(input) || clicked) {
-        this.confirming = false;
-        if (this.confirmChoice === 0) this.game.startNewGame();
+    if (this.mode === 'confirm') {
+      const rects = [0, 1].map((i) => this.confirmRect(i));
+      const m = menuInput(input, this.confirmChoice, rects, ['left', 'up'], ['right', 'down']);
+      this.confirmChoice = m.sel;
+      if (input.wasPressed('pause')) this.mode = 'file';
+      else if (m.chosen) {
+        if (this.confirmChoice === 0) this.game.startNewGame(slot);
+        else this.mode = 'file';
       }
       return;
     }
 
-    if (input.wasPressed('up')) this.selected = 0;
-    if (input.wasPressed('down') && this.save) this.selected = 1;
-    let clicked = false;
-    for (const i of this.save ? [0, 1] : [0]) {
-      if (input.pointerMoved && input.pointerIn(this.itemRect(i))) this.selected = i;
-      if (input.clickedIn(this.itemRect(i))) {
-        this.selected = i;
-        clicked = true;
+    if (this.mode === 'file') {
+      const rects = FILE_OPTIONS.map((_, i) => this.fileOptionRect(i));
+      const m = menuInput(input, this.fileChoice, rects, ['up'], ['down']);
+      this.fileChoice = m.sel;
+      if (input.wasPressed('pause')) this.mode = 'files';
+      else if (m.chosen) {
+        if (this.fileChoice === 0) this.game.continueGame(slot, this.saves[slot]);
+        else if (this.fileChoice === 1) {
+          this.mode = 'confirm';
+          this.confirmChoice = 1;
+        } else this.mode = 'files';
       }
+      return;
     }
-    if (!confirmKey(input) && !clicked) return;
 
-    if (this.selected === 1 && this.save) {
-      this.game.continueGame(this.save);
-    } else if (this.save) {
-      this.confirming = true;
-      this.confirmChoice = 1;
+    const rects = this.saves.map((_, i) => this.itemRect(i));
+    const m = menuInput(input, this.selected, rects, ['up'], ['down']);
+    this.selected = m.sel;
+    if (!m.chosen) return;
+    if (this.saves[this.selected]) {
+      this.mode = 'file';
+      this.fileChoice = 0;
     } else {
-      this.game.startNewGame();
+      this.game.startNewGame(this.selected);
     }
   }
 
@@ -109,13 +145,12 @@ export class TitleScene {
     ctx.drawImage(getHeroSprites('cloth').down[0], 0, 0);
     ctx.restore();
 
-    // Menu
-    const items = ['START', 'CONTINUE'];
-    items.forEach((label, i) => {
+    // Save files
+    this.saves.forEach((save, i) => {
+      const label = this.fileLabel(i);
       const y = 126 + i * 16;
-      const enabled = i === 0 || this.save;
       const selected = i === this.selected;
-      const color = !enabled ? '#5a5a6a' : selected ? '#ffffff' : '#b0b0c0';
+      const color = selected ? '#ffffff' : save ? '#b0b0c0' : '#7a7a8a';
       if (selected) {
         const w = textWidth(label) + 20;
         px(ctx, PANEL.highlight, SCREEN_W / 2 - w / 2, y - 3, w, 13);
@@ -124,16 +159,34 @@ export class TitleScene {
       drawTextCentered(ctx, label, SCREEN_W / 2, y, color);
     });
 
-    if (this.save) {
-      const s = this.save;
+    const s = this.saves[this.selected];
+    if (s) {
       const where = AREAS[ALL_ROOMS.find((r) => r.id === s.location)?.area ?? 'village'].name.toUpperCase();
-      drawTextCentered(ctx, `SAVE: LV ${s.level}  ${formatTime(s.stats?.playTime ?? 0)}  ${where}`, SCREEN_W / 2, 162, '#8a8aa0');
+      const info = `LV ${s.level}  ${formatTime(s.stats?.playTime ?? 0)}  ${where}${s.cleared ? '  CLEARED' : ''}`;
+      drawTextCentered(ctx, info, SCREEN_W / 2, 162, s.cleared ? '#e0c060' : '#8a8aa0');
+    } else {
+      drawTextCentered(ctx, 'START A NEW ADVENTURE', SCREEN_W / 2, 162, '#8a8aa0');
     }
 
-    drawTextCentered(ctx, 'ARROWS: CHOOSE   SPACE/ENTER: OK', SCREEN_W / 2, SCREEN_H - 30, '#7a7a90');
-    drawTextCentered(ctx, 'MOVE: ARROWS/WASD  SWORD: SPACE  TALK: E', SCREEN_W / 2, SCREEN_H - 18, '#5a5a70');
+    drawTextCentered(ctx, 'ARROWS: CHOOSE   SPACE/ENTER: OK', SCREEN_W / 2, SCREEN_H - 34, '#7a7a90');
+    drawTextCentered(ctx, 'WASD: MOVE  CLICK: SWORD  SPACE: ROLL', SCREEN_W / 2, SCREEN_H - 22, '#5a5a70');
+    drawTextCentered(ctx, 'RIGHT CLICK: SPELL  1-4: SWITCH', SCREEN_W / 2, SCREEN_H - 12, '#5a5a70');
 
-    if (this.confirming) this.drawConfirm(ctx);
+    if (this.mode === 'file') this.drawFileMenu(ctx);
+    if (this.mode === 'confirm') this.drawConfirm(ctx);
+  }
+
+  drawFileMenu(ctx) {
+    const p = this.filePanel;
+    dimScreen(ctx, SCREEN_W, SCREEN_H, 0.5);
+    drawPanel(ctx, p.x, p.y, p.w, p.h);
+    drawTextCentered(ctx, `FILE ${this.selected + 1}`, SCREEN_W / 2, p.y + 8, '#ffe040');
+    FILE_OPTIONS.forEach((label, i) => {
+      const r = this.fileOptionRect(i);
+      const selected = i === this.fileChoice;
+      if (selected) px(ctx, PANEL.highlight, r.x, r.y, r.w, r.h);
+      drawTextCentered(ctx, label, SCREEN_W / 2, r.y + 3, selected ? '#ffffff' : '#8a8aa0');
+    });
   }
 
   drawConfirm(ctx) {
@@ -143,8 +196,8 @@ export class TitleScene {
     const y = (SCREEN_H - h) / 2;
     dimScreen(ctx, SCREEN_W, SCREEN_H, 0.5);
     drawPanel(ctx, x, y, w, h);
-    drawTextCentered(ctx, 'START A NEW GAME?', SCREEN_W / 2, y + 10, '#ffe040');
-    drawTextCentered(ctx, 'YOUR SAVE WILL BE ERASED.', SCREEN_W / 2, y + 22, '#c0c0d0');
+    drawTextCentered(ctx, `OVERWRITE FILE ${this.selected + 1}?`, SCREEN_W / 2, y + 10, '#ffe040');
+    drawTextCentered(ctx, 'ITS SAVE WILL BE ERASED.', SCREEN_W / 2, y + 22, '#c0c0d0');
     ['YES', 'NO'].forEach((label, i) => {
       const cx = SCREEN_W / 2 + (i === 0 ? -30 : 30);
       const selected = i === this.confirmChoice;
@@ -157,7 +210,7 @@ export class TitleScene {
 // ---------- Death ----------
 
 // Overlays the frozen play scene: the hero spins, the screen fades, "You fell..." shows,
-// then the play scene respawns the hero in the Village.
+// then the play scene respawns the hero in the last town they entered.
 export class DeathScene {
   constructor(game, play, goldLost) {
     this.game = game;
@@ -240,7 +293,6 @@ export class CompleteScene {
     this.hover = input.pointerIn(this.button);
     if (this.t < 1) return; // don't skip past the screen by accident
     if (confirmKey(input) || input.clickedIn(this.button)) {
-      clearSave();
       this.game.returnToTitle();
     }
   }
@@ -295,7 +347,7 @@ export class CompleteScene {
     px(ctx, '#000', b.x - 1, b.y - 1, b.w + 2, b.h + 2);
     px(ctx, active ? '#ffe040' : '#c0a030', b.x, b.y, b.w, b.h);
     px(ctx, active ? '#3a2a5a' : '#2a1a4a', b.x + 2, b.y + 2, b.w - 4, b.h - 4);
-    drawTextCentered(ctx, 'PLAY AGAIN', cx, b.y + 6, active ? '#ffffff' : '#d0d0e0');
+    drawTextCentered(ctx, 'TITLE SCREEN', cx, b.y + 6, active ? '#ffffff' : '#d0d0e0');
     drawTextCentered(ctx, 'SPACE / ENTER / CLICK', cx, b.y + b.h + 8, '#6a6a8a');
   }
 }

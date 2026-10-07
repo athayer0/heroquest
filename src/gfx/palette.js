@@ -38,6 +38,11 @@ const BASE = {
   stone: '#c8c0d0', stoneMid: '#9890a8', stoneDark: '#686078',
   iron: '#5a5a6a', ironDark: '#34343f', gold: '#e0b040',
   fire: '#f28a2a', fireLight: '#ffe060', fireRed: '#c83a1a',
+  sand: '#d8b868', sandDark: '#a8853a', sandLight: '#f0d8a0',
+  lava: '#e0501a', lavaLight: '#ffc040', lavaDark: '#8a2410',
+  ice: '#bfe4f4', iceLight: '#f4fcff', iceDark: '#86b8d8',
+  vent: '#4a3e44', ventDark: '#221a1e',
+  cactus: '#4a9a4a', cactusDark: '#2a6a32', cactusLight: '#7ac868',
 };
 
 export const AREA_PALETTES = {
@@ -50,13 +55,45 @@ export const AREA_PALETTES = {
     wall: '#6a6a72', wallDark: '#44444c', wallLight: '#8a8a94',
     door: '#0e0a08',
   },
+  // Lava Cave: dark, warm rock and bright lava (the camp shares it; its spring keeps the water colors).
   cave: {
     ...BASE,
-    floor: '#4a4252', floorDark: '#352f3c', floorLight: '#5c5466',
-    wall: '#3a3448', wallDark: '#24202e', wallLight: '#544c66',
-    rock: '#5a5266', rockLight: '#766c86', rockDark: '#3a3444',
+    floor: '#3e3030', floorDark: '#2c2222', floorLight: '#523e3a',
+    wall: '#33272a', wallDark: '#1c1416', wallLight: '#54403c',
+    rock: '#54403a', rockLight: '#7a5c50', rockDark: '#2e2220',
     water: '#1e3c6e', waterLight: '#4a78b8', waterDark: '#142a50',
-    door: '#0a0810',
+    lava: '#e8501a', lavaLight: '#ffc040', lavaDark: '#9a2a0c',
+    vent: '#3a2c2c', ventDark: '#1a1212',
+    door: '#0a0606',
+  },
+  // Sand for ground, sandstone for walls, stone and ruins; quicksand is a darker, wetter brown.
+  desert: {
+    ...BASE,
+    grass: '#e2c27c', grassDark: '#c8a45c', grassLight: '#f2dca4',
+    path: '#c8a060', pathDark: '#a88040', pathLight: '#dcb878',
+    wall: '#c89a5a', wallDark: '#9a7038', wallLight: '#e2bc80',
+    stone: '#ecd29a', stoneMid: '#c8a464', stoneDark: '#94703c',
+    rock: '#b8946a', rockLight: '#d8b88a', rockDark: '#8a6a44',
+    floor: '#c8a870', floorDark: '#a8885a', floorLight: '#dcc090',
+    sand: '#b08040', sandDark: '#7a5424', sandLight: '#d0a868',
+    roof: '#c8844a', roofDark: '#8a5428', roofLight: '#e8a868',
+    plaster: '#f0dcb0', plasterDark: '#c8b080', timber: '#9a6a38',
+    leaf: '#3a8a3a', leafLight: '#6ab84a', leafDark: '#1f5a2a',
+    door: '#2a1a0a',
+  },
+  // Snow for ground, snow-dusted pines, icy grey-blue rock.
+  peaks: {
+    ...BASE,
+    grass: '#e4ecf4', grassDark: '#c4d2e2', grassLight: '#ffffff',
+    path: '#c8d4e2', pathDark: '#a8b8cc', pathLight: '#e0e8f2',
+    leaf: '#2a5a50', leafLight: '#e8f4ff', leafDark: '#173a34', trunk: '#5a3a2a',
+    wall: '#8a9cb4', wallDark: '#5a6a84', wallLight: '#c0d0e4',
+    rock: '#9aa8bc', rockLight: '#d0dcea', rockDark: '#6a7890',
+    stone: '#d8e0ea', stoneMid: '#a8b4c4', stoneDark: '#707c90',
+    ice: '#a8dcf4', iceLight: '#f4fcff', iceDark: '#6aa8d0',
+    roof: '#e8f0f8', roofDark: '#a8b8cc', roofLight: '#ffffff',
+    plaster: '#b08858', plasterDark: '#8a6a40', timber: '#5a3a22',
+    door: '#1a2030',
   },
   castle: {
     ...BASE,

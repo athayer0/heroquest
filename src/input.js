@@ -1,4 +1,4 @@
-// Keyboard input: held state, per-update "pressed" edges, and direction order
+// Keyboard and mouse input: held state, per-update "pressed" edges, and direction order
 // (so facing follows the most recently pressed direction).
 
 const KEYMAP = {
@@ -6,11 +6,16 @@ const KEYMAP = {
   ArrowDown: 'down', KeyS: 'down',
   ArrowLeft: 'left', KeyA: 'left',
   ArrowRight: 'right', KeyD: 'right',
-  Space: 'attack',
+  Space: 'dodge', // also confirms in menus
   KeyE: 'interact',
   KeyQ: 'potion',
+  KeyR: 'manaPotion',
+  KeyM: 'map',
+  Digit1: 'spell1', Digit2: 'spell2', Digit3: 'spell3', Digit4: 'spell4',
   Escape: 'pause',
   Enter: 'confirm',
+  // Debug keys, only acted on with ?debug in the URL (see PlayScene.debugKeys).
+  KeyB: 'debugBurn', KeyC: 'debugChill', KeyT: 'debugTestRoom', KeyK: 'debugThrone', KeyP: 'debugSkills', KeyG: 'debugGold',
 };
 
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
@@ -23,6 +28,9 @@ export class Input {
     this.dirStack = [];
     this.pointer = null; // { x, y } in game pixels, once the mouse has moved over the canvas
     this.clicked = false; // a click happened since the last update
+    this.rightClicked = false; // a right-click happened since the last update
+    this.mouseHeld = false; // the left button is down
+    this.wheel = 0; // mouse-wheel notches since the last update (+ is down)
     this.pointerMoved = false;
 
     if (canvas) {
@@ -38,9 +46,23 @@ export class Input {
         this.pointerMoved = true;
       });
       canvas.addEventListener('mousedown', (e) => {
+        if (e.button !== 0 && e.button !== 2) return;
         this.pointer = toGame(e);
-        this.clicked = true;
+        if (e.button === 0) {
+          this.clicked = true;
+          this.mouseHeld = true;
+        } else this.rightClicked = true;
       });
+      // On the window, so releasing outside the canvas still counts.
+      target.addEventListener('mouseup', (e) => {
+        if (e.button === 0) this.mouseHeld = false;
+      });
+      // Right-click casts spells, so keep the browser's menu off the canvas.
+      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY) this.wheel += Math.sign(e.deltaY);
+      }, { passive: false });
     }
 
     target.addEventListener('keydown', (e) => {
@@ -64,6 +86,7 @@ export class Input {
     });
 
     target.addEventListener('blur', () => {
+      this.mouseHeld = false;
       this.codes.clear();
       this.dirStack = [];
     });
@@ -96,6 +119,8 @@ export class Input {
   endFrame() {
     this.pressed.clear();
     this.clicked = false;
+    this.rightClicked = false;
+    this.wheel = 0;
     this.pointerMoved = false;
   }
 }

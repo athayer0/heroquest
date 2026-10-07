@@ -33,6 +33,14 @@ export class Goblin extends Enemy {
     }
   }
 
+  // A freeze cancels a wind-up or charge; the goblin is dazed afterwards as if the charge ended.
+  onFrozen() {
+    if (this.state === 'windup' || this.state === 'charge') {
+      this.state = 'recover';
+      this.timer = this.stats.recoverTime;
+    }
+  }
+
   think(dt, { player, room }) {
     const s = this.stats;
     this.timer -= dt;

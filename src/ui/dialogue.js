@@ -48,7 +48,7 @@ export class DialogueScene {
   update(dt) {
     this.t += dt;
     const input = this.game.input;
-    if (!(input.wasPressed('interact') || input.wasPressed('attack') || input.wasPressed('confirm'))) return;
+    if (!(input.wasPressed('interact') || input.wasPressed('dodge') || input.wasPressed('confirm'))) return;
 
     if (!this.pageDone) {
       this.t = this.pageLength / CHARS_PER_SEC; // reveal the rest of the page

@@ -1,5 +1,5 @@
 import { TILE, ROOM_COLS, ROOM_ROWS } from '../constants.js';
-import { isSolidChar, getTileSet, drawTile } from './tiles.js';
+import { TILES, isSolidChar, getTileSet, drawTile } from './tiles.js';
 
 export class Room {
   constructor(def, area) {
@@ -23,6 +23,11 @@ export class Room {
 
   tileAt(tx, ty) {
     return this.map[ty]?.[tx];
+  }
+
+  // Name of the tile under a point in room pixels (e.g. 'ice'), or null off the map.
+  groundAt(x, y) {
+    return TILES[this.tileAt(Math.floor(x / TILE), Math.floor(y / TILE))]?.name ?? null;
   }
 
   // Off-map tiles are open only where a neighbor room exists (unless edgesSolid,
@@ -57,7 +62,7 @@ export class Room {
     const set = getTileSet(this.area.palette);
     for (let ty = 0; ty < ROOM_ROWS; ty++) {
       for (let tx = 0; tx < ROOM_COLS; tx++) {
-        drawTile(ctx, set, this.map[ty][tx], this.ground, ox + tx * TILE, oy + ty * TILE, time);
+        drawTile(ctx, set, this.map[ty][tx], this.ground, ox + tx * TILE, oy + ty * TILE, time, tx, ty);
       }
     }
   }

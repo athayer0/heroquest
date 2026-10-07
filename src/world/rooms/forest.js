@@ -1,4 +1,4 @@
-// Forest: bats and goblins. Ends at the cave mouth in the east.
+// Forest: bats and goblins. The path leaves east into the Desert.
 
 export const FOREST_ROOMS = [
   {
@@ -55,18 +55,18 @@ export const FOREST_ROOMS = [
     pos: [3, 4],
     map: [
       'TTTTTTTTTTTTTTTT',
-      'TTTT.....T..####',
-      'TT......T...####',
-      'T....b......####',
-      'T..T........DDDD',
-      'T...........DDDD',
-      'T.....R.....DDDD',
-      'T..bb.......####',
-      'TT.......S..####',
-      'TTT.........####',
-      'TTTTTTT..TTT####',
+      'TTTT.....T..TTTT',
+      'TT......T....TTT',
+      'T....b........TT',
+      'T..T............',
+      'T...............',
+      'T.....R.........',
+      'T..bb.........TT',
+      'TT.......S...TTT',
+      'TTT.........TTTT',
+      'TTTTTTT..TTTTTTT',
     ],
-    signs: [{ x: 9, y: 8, text: 'CAVE AHEAD\nRecommended Lv 5' }],
+    signs: [{ x: 9, y: 8, text: 'DESERT AHEAD (EAST)\nRecommended Lv 6' }],
     enemies: [
       { type: 'goblin', x: 5, y: 5 },
       { type: 'bat', x: 9, y: 2 },

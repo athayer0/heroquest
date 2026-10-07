@@ -1,4 +1,4 @@
-// Level-up overlay: pauses the game and offers "+Max HP" or "+Damage", then fully heals.
+// Level-up overlay: pauses the game and offers "+Max HP" or "+Max Mana", then fully restores both.
 import { SCREEN_W, SCREEN_H } from '../constants.js';
 import { LEVELING } from '../config.js';
 import { drawText, drawTextCentered, textWidth } from '../gfx/font.js';
@@ -7,7 +7,7 @@ import { LEVEL_CHOICES, applyLevelChoice } from '../systems/leveling.js';
 import { drawPanel, dimScreen, PANEL } from './panel.js';
 
 const W = 184;
-const H = 104;
+const H = 116;
 
 export class LevelUpScene {
   constructor(game, player, onDone) {
@@ -28,7 +28,7 @@ export class LevelUpScene {
     const input = this.game.input;
     if (input.wasPressed('up') || input.wasPressed('left')) this.selected = 0;
     if (input.wasPressed('down') || input.wasPressed('right')) this.selected = 1;
-    if (this.ready && (input.wasPressed('attack') || input.wasPressed('interact') || input.wasPressed('confirm'))) {
+    if (this.ready && (input.wasPressed('dodge') || input.wasPressed('interact') || input.wasPressed('confirm'))) {
       applyLevelChoice(this.player, LEVEL_CHOICES[this.selected]);
       this.game.pop();
       this.onDone?.();
@@ -44,10 +44,11 @@ export class LevelUpScene {
     const cx = SCREEN_W / 2;
     drawTextCentered(ctx, 'LEVEL UP!', cx, y + 10, '#ffe040', 2);
     drawTextCentered(ctx, `YOU ARE NOW LEVEL ${this.player.level}`, cx, y + 30, '#f4f4f0');
-    drawTextCentered(ctx, 'CHOOSE A BONUS:', cx, y + 42, '#8a8a99');
+    drawTextCentered(ctx, '+1 PERK POINT (ESC > SKILLS)', cx, y + 42, '#ffe040');
+    drawTextCentered(ctx, 'CHOOSE A BONUS:', cx, y + 54, '#8a8a99');
 
     LEVEL_CHOICES.forEach((choice, i) => {
-      const oy = y + 56 + i * 16;
+      const oy = y + 68 + i * 16;
       const selected = i === this.selected;
       if (selected) px(ctx, PANEL.highlight, x + 8, oy - 3, W - 16, 13);
       const color = selected ? '#ffffff' : '#a0a0b8';

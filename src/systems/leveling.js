@@ -1,8 +1,10 @@
 // XP and level-ups. `player.xp` is progress toward the next level; extra XP carries over.
+// XP comes from kills and from skill XP (see skills.js), so it can be fractional.
 import { LEVELING } from '../config.js';
 
 export function xpToNext(level) {
-  return LEVELING.xpPerLevel * level;
+  const steep = Math.max(0, level - LEVELING.steepFrom) * LEVELING.steepPctPerLevel;
+  return Math.round(LEVELING.xpPerLevel * level * (1 + steep / 100));
 }
 
 export function isMaxLevel(player) {
@@ -10,6 +12,7 @@ export function isMaxLevel(player) {
 }
 
 // Adds XP and returns how many levels were gained (can be more than one).
+// Each level also gives a perk point.
 export function addXp(player, amount) {
   if (isMaxLevel(player)) return 0;
   player.xp += amount;
@@ -20,6 +23,7 @@ export function addXp(player, amount) {
     gained++;
   }
   if (isMaxLevel(player)) player.xp = 0;
+  player.perkPoints += gained;
   return gained;
 }
 
@@ -31,15 +35,16 @@ export const LEVEL_CHOICES = [
     apply: (p) => { p.maxHp += LEVELING.hpChoice; },
   },
   {
-    id: 'damage',
-    label: `+${LEVELING.damageChoice} DAMAGE`,
-    preview: (p) => `${p.baseDamage} > ${p.baseDamage + LEVELING.damageChoice}`,
-    apply: (p) => { p.baseDamage += LEVELING.damageChoice; },
+    id: 'mana',
+    label: `+${LEVELING.manaChoice} MAX MANA`,
+    preview: (p) => `${p.maxMana} > ${p.maxMana + LEVELING.manaChoice}`,
+    apply: (p) => { p.maxMana += LEVELING.manaChoice; },
   },
 ];
 
-// Applies the chosen bonus, then fully heals.
+// Applies the chosen bonus, then fully restores HP and mana.
 export function applyLevelChoice(player, choice) {
   choice.apply(player);
   player.hp = player.maxHp;
+  player.mana = player.maxMana;
 }

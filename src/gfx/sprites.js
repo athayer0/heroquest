@@ -68,3 +68,19 @@ export function flipV(rows) {
 export function solidColors(colors, color = '#ffffff') {
   return Object.fromEntries(Object.keys(colors).map((k) => [k, color]));
 }
+
+// A single-color copy of an image's opaque pixels (cached per image and color), for tints.
+const tintCache = new WeakMap();
+export function tinted(img, color) {
+  let byColor = tintCache.get(img);
+  if (!byColor) tintCache.set(img, (byColor = new Map()));
+  if (!byColor.has(color)) {
+    byColor.set(color, makeCanvas(img.width, img.height, (g) => {
+      g.drawImage(img, 0, 0);
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = color;
+      g.fillRect(0, 0, img.width, img.height);
+    }));
+  }
+  return byColor.get(color);
+}
